@@ -36,8 +36,15 @@ request.interceptors.response.use(
   },
   error => {
     console.error('响应错误:', error)
-    // 401 未授权：清除登录状态，跳转登录页
+    // 401 未授权
     if (error.response?.status === 401) {
+      // 登录接口的401是密码错误，不清除token
+      const isLoginRequest = error.config?.url?.includes('/login')
+      if (isLoginRequest) {
+        const errorData = error.response.data
+        return Promise.reject(new Error(errorData.error || '用户名或密码错误'))
+      }
+      // 其他接口的401是token过期，清除登录状态
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       router.push('/login')

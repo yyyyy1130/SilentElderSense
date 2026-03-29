@@ -17,7 +17,6 @@
             placeholder="选择摄像头"
             :disabled="isConnected"
             style="width: 200px"
-            @change="onCameraSelect"
           >
             <el-option
               v-for="(camera, index) in cameraDevices"
@@ -27,19 +26,19 @@
             />
           </el-select>
           <el-button
+            :type="isConnected ? 'danger' : 'primary'"
+            :icon="isConnected ? VideoPause : VideoPlay"
+            @click="isConnected ? stopSession() : startCameraDetection()"
+            :disabled="!isConnected && !selectedCameraId"
+          >
+            {{ isConnected ? '停止检测' : '开始检测' }}
+          </el-button>
+          <el-button
             :icon="RefreshRight"
             @click="loadCameraDevices"
             :disabled="isConnected"
             title="刷新摄像头列表"
           />
-          <el-button
-            type="danger"
-            :icon="VideoPause"
-            @click="stopSession"
-            :disabled="!isConnected"
-          >
-            停止检测
-          </el-button>
         </div>
       </div>
       <div v-if="isConnected" class="camera-info">
@@ -137,7 +136,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { VideoPause, VideoCamera, RefreshRight } from '@element-plus/icons-vue'
+import { VideoPause, VideoCamera, RefreshRight, VideoPlay } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { createSession, closeSession, getCameraDevices, stopStream } from '@/api/monitor'
 import { getEvents } from '@/api/events'
@@ -220,11 +219,6 @@ const loadCameraDevices = async () => {
   }
 }
 
-// 选择摄像头后自动开始检测
-const onCameraSelect = async (deviceId) => {
-  if (!deviceId || isConnected.value) return
-  await startCameraDetection()
-}
 
 // 摄像头检测
 const startCameraDetection = async () => {
