@@ -16,7 +16,7 @@ class Event(Base):
 
     # 事件信息
     person_id = Column(Integer, nullable=False)  # 触发事件的人员ID
-    event_type = Column(String(32), nullable=False)  # FALL, STATIC, NIGHT_ABNORMAL
+    event_type = Column(String(32), nullable=False)  # FALLEN, STILLNESS, NIGHT_ABNORMAL
     risk_level = Column(String(16), nullable=False)  # LOW, MEDIUM, HIGH
 
     # 时间信息

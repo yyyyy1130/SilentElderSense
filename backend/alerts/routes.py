@@ -147,7 +147,7 @@ async def trigger_alert():
     {
         "user_id": 1,
         "event_id": 123,
-        "event_type": "FALL",
+        "event_type": "FALLEN",
         "risk_level": "HIGH",
         "duration": 2.5
     }

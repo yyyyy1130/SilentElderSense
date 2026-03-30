@@ -99,9 +99,9 @@
           <div class="filter-group">
             <select v-model="filterType" class="filter-select" @change="loadEvents">
               <option value="">全部类型</option>
-              <option value="FALL">跌倒检测</option>
-              <option value="STATIC">长时间静止</option>
-              <option value="NIGHT_ACTIVITY">夜间异常活动</option>
+              <option value="FALLEN">跌倒检测</option>
+              <option value="STILLNESS">长时间静止</option>
+              <option value="NIGHT_ABNORMAL">夜间异常活动</option>
             </select>
             <select v-model="filterStatus" class="filter-select" @change="loadEvents">
               <option value="">全部状态</option>
@@ -298,57 +298,71 @@ let statusChart = null
 const totalPages = computed(() => Math.ceil(eventsStore.pagination.total / 20) || 1)
 
 // 统计卡片数据
-const statsCards = computed(() => [
-  {
-    key: 'total',
-    label: '总事件数',
-    value: eventsStore.statistics.total,
-    type: 'primary',
-    trend: 5.2,
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })
-    ])
-  },
-  {
-    key: 'fall',
-    label: '跌倒检测',
-    value: eventsStore.statsFormatted.fall,
-    type: 'danger',
-    trend: -2.1,
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' })
-    ])
-  },
-  {
-    key: 'stillness',
-    label: '长时间静止',
-    value: eventsStore.statsFormatted.stillness,
-    type: 'warning',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('circle', { cx: '12', cy: '12', r: '10' }),
-      h('polyline', { points: '12 6 12 12 16 14' })
-    ])
-  },
-  {
-    key: 'pending',
-    label: '待处理',
-    value: eventsStore.statsFormatted.pending,
-    type: 'info',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
-      h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })
-    ])
-  }
-])
+const statsCards = computed(() => {
+  const stats = eventsStore.statistics
+  const trends = stats.trends || {}
+
+  return [
+    {
+      key: 'total',
+      label: '总事件数',
+      value: stats.total,
+      type: 'primary',
+      trend: trends.total,
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })
+      ])
+    },
+    {
+      key: 'fall',
+      label: '跌倒检测',
+      value: eventsStore.statsFormatted.fall,
+      type: 'danger',
+      trend: trends.by_type?.FALLEN,
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' })
+      ])
+    },
+    {
+      key: 'stillness',
+      label: '长时间静止',
+      value: eventsStore.statsFormatted.stillness,
+      type: 'warning',
+      trend: trends.by_type?.STILLNESS,
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('circle', { cx: '12', cy: '12', r: '10' }),
+        h('polyline', { points: '12 6 12 12 16 14' })
+      ])
+    },
+    {
+      key: 'pending',
+      label: '待处理',
+      value: eventsStore.statsFormatted.pending,
+      type: 'info',
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
+        h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })
+      ])
+    }
+  ]
+})
 
 // 工具函数
 const getTypeLabel = (type) => {
-  const map = { FALL: '跌倒检测', STATIC: '长时间静止', STILLNESS: '长时间静止', NIGHT_ACTIVITY: '夜间异常活动' }
+  const map = {
+    FALLEN: '跌倒检测',
+    STILLNESS: '长时间静止',
+    NIGHT_ABNORMAL: '夜间异常活动'
+  }
   return map[type] || type
 }
 
 const getTypeClass = (type) => {
-  const map = { FALL: 'type-fall', STATIC: 'type-stillness', STILLNESS: 'type-stillness', NIGHT_ACTIVITY: 'type-night' }
+  const map = {
+    FALLEN: 'type-fall',
+    STILLNESS: 'type-stillness',
+    NIGHT_ABNORMAL: 'type-night'
+  }
   return map[type] || ''
 }
 
@@ -399,18 +413,33 @@ const handlePageChange = (page) => {
   loadEvents()
 }
 
-const handleEvent = (event) => {
-  ElMessageBox.prompt('请选择处理结果', '处理事件', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    inputType: 'select',
-    inputOptions: { confirmed: '已确认', false_alarm: '误报' }
-  }).then(async ({ value }) => {
-    await eventsStore.updateEventStatus(event.id, { status: value })
-    ElMessage.success('事件已处理')
+const handleEvent = async (event) => {
+  // 弹出选择框让用户选择"确认"或"误报"
+  ElMessageBox.confirm(
+    '请选择该事件的处理结果：',
+    '处理事件',
+    {
+      distinguishCancelAndClose: true,
+      confirmButtonText: '确认事件',
+      cancelButtonText: '标记误报',
+      type: 'warning'
+    }
+  ).then(async () => {
+    // 用户点击"确认事件"
+    await eventsStore.updateEventStatus(event.id, { status: 'confirmed' })
+    ElMessage.success('事件已确认为真实异常')
     loadEvents()
     loadStats()
-  }).catch(() => {})
+  }).catch(async (action) => {
+    // 用户点击"标记误报"
+    if (action === 'cancel') {
+      await eventsStore.updateEventStatus(event.id, { status: 'false_alarm' })
+      ElMessage.success('事件已标记为误报')
+      loadEvents()
+      loadStats()
+    }
+    // action === 'close' 时是点击关闭按钮，不做处理
+  })
 }
 
 const viewDetails = async (event) => {
@@ -450,9 +479,9 @@ const updateCharts = () => {
         itemStyle: { borderRadius: 8, borderColor: 'rgba(26,26,36,0.8)', borderWidth: 3 },
         label: { show: true, color: 'rgba(255,255,255,0.7)', fontSize: 12 },
         data: [
-          { value: stats.by_type?.FALL || 0, name: '跌倒检测', itemStyle: { color: '#f97316' } },
-          { value: (stats.by_type?.STILLNESS || 0) + (stats.by_type?.STATIC || 0), name: '长时间静止', itemStyle: { color: '#eab308' } },
-          { value: stats.by_type?.NIGHT_ACTIVITY || 0, name: '夜间异常', itemStyle: { color: '#3b82f6' } }
+          { value: stats.by_type?.FALLEN || 0, name: '跌倒检测', itemStyle: { color: '#f97316' } },
+          { value: stats.by_type?.STILLNESS || 0, name: '长时间静止', itemStyle: { color: '#eab308' } },
+          { value: stats.by_type?.NIGHT_ABNORMAL || 0, name: '夜间异常', itemStyle: { color: '#3b82f6' } }
         ]
       }]
     })

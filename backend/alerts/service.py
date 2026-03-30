@@ -31,10 +31,10 @@ class AlertService:
         AlertLevel.LEVEL_3: '三级响应（紧急通知）'
     }
 
-    # 事件类型描述
+    # 事件类型描述（与 risk_engine.py 保持一致）
     EVENT_DESCRIPTIONS = {
-        'FALL': '跌倒检测',
-        'STATIC': '长时间静止',
+        'FALLEN': '跌倒检测',
+        'STILLNESS': '长时间静止',
         'NIGHT_ABNORMAL': '夜间异常活动'
     }
 
@@ -124,7 +124,7 @@ class AlertService:
         Args:
             user_id: 用户ID
             event_id: 关联事件ID
-            event_type: 事件类型 (FALL, STATIC, NIGHT_ABNORMAL)
+            event_type: 事件类型 (FALLEN, STILLNESS, NIGHT_ABNORMAL)
             risk_level: 风险等级 (HIGH, MEDIUM, LOW)
             duration: 持续时长
 

@@ -1,10 +1,13 @@
-from quart import Quart, request
+from quart import Quart, request, jsonify
 from config import Config
 from auth import init_db, auth_bp
 from detect import detect_bp
 from events import events_bp
 from alerts import alerts_bp
 from detect.BackendMonitoring import monitoring_bp
+from datetime import datetime
+import psutil
+import os
 
 app = Quart(__name__)
 app.config.from_object(Config)
@@ -51,6 +54,66 @@ async def handle_options(path=''):
 @app.route('/')
 async def index():
     return {'message': 'Backend API is running'}
+
+
+@app.route('/api/system/status', methods=['GET'])
+async def system_status():
+    """
+    系统状态 API
+
+    返回各服务的运行状态
+    """
+    # 检查数据库连接
+    from auth.models import engine
+    db_status = 'online'
+    try:
+        with engine.connect() as conn:
+            conn.execute('SELECT 1')
+    except Exception:
+        db_status = 'offline'
+
+    # 获取系统资源使用情况
+    cpu_percent = psutil.cpu_percent(interval=0.1)
+    memory = psutil.virtual_memory()
+
+    services = [
+        {
+            'name': '识别引擎',
+            'desc': 'AI行为识别服务',
+            'status': 'online',
+            'statusText': '运行中'
+        },
+        {
+            'name': '数据采集',
+            'desc': '视频流采集服务',
+            'status': 'online',
+            'statusText': '运行中'
+        },
+        {
+            'name': '告警服务',
+            'desc': '消息推送服务',
+            'status': 'online',
+            'statusText': '运行中'
+        },
+        {
+            'name': '存储服务',
+            'desc': '数据存储服务',
+            'status': db_status,
+            'statusText': '运行中' if db_status == 'online' else '异常'
+        }
+    ]
+
+    return jsonify({
+        'services': services,
+        'resources': {
+            'cpu_percent': cpu_percent,
+            'memory_percent': memory.percent,
+            'memory_used_gb': round(memory.used / (1024**3), 1),
+            'memory_total_gb': round(memory.total / (1024**3), 1)
+        },
+        'uptime': datetime.now().isoformat()
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

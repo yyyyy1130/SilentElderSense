@@ -26,7 +26,7 @@ async def create_event():
     {
         "video_id": "abc123",
         "person_id": 0,
-        "event_type": "FALL",
+        "event_type": "FALLEN",
         "risk_level": "HIGH",
         "start_time": "2024-03-23T10:00:00",
         "end_time": "2024-03-23T10:00:02",
@@ -185,38 +185,210 @@ async def event_stats():
     user_id = request.current_user['user_id']
     days = int(request.args.get('days', 7))
 
-    start_date = datetime.now() - timedelta(days=days)
+    now = datetime.now()
+    start_date = now - timedelta(days=days)
 
     db = next(get_db())
-    query = db.query(Event).filter(
+
+    # 本期事件
+    current_events = db.query(Event).filter(
         Event.created_at >= start_date,
         Event.user_id == user_id
-    )
+    ).all()
 
-    events = query.all()
+    # 上期事件（用于计算趋势）
+    prev_start = start_date - timedelta(days=days)
+    prev_events = db.query(Event).filter(
+        Event.created_at >= prev_start,
+        Event.created_at < start_date,
+        Event.user_id == user_id
+    ).all()
 
-    # 统计
+    # 本期统计
     stats = {
-        'total': len(events),
+        'total': len(current_events),
         'by_type': {},
         'by_risk': {},
         'by_status': {}
     }
 
-    for event in events:
-        # 按类型统计
+    # 上期统计（用于趋势计算）
+    prev_stats = {
+        'total': len(prev_events),
+        'by_type': {},
+        'by_risk': {},
+        'by_status': {}
+    }
+
+    for event in current_events:
         if event.event_type not in stats['by_type']:
             stats['by_type'][event.event_type] = 0
         stats['by_type'][event.event_type] += 1
 
-        # 按风险等级统计
         if event.risk_level not in stats['by_risk']:
             stats['by_risk'][event.risk_level] = 0
         stats['by_risk'][event.risk_level] += 1
 
-        # 按状态统计
         if event.status not in stats['by_status']:
             stats['by_status'][event.status] = 0
         stats['by_status'][event.status] += 1
 
+    for event in prev_events:
+        if event.event_type not in prev_stats['by_type']:
+            prev_stats['by_type'][event.event_type] = 0
+        prev_stats['by_type'][event.event_type] += 1
+
+        if event.risk_level not in prev_stats['by_risk']:
+            prev_stats['by_risk'][event.risk_level] = 0
+        prev_stats['by_risk'][event.risk_level] += 1
+
+        if event.status not in prev_stats['by_status']:
+            prev_stats['by_status'][event.status] = 0
+        prev_stats['by_status'][event.status] += 1
+
+    # 计算趋势
+    def calc_trend(current, prev):
+        if prev == 0:
+            return None  # 上期为0，无法计算趋势
+        return round((current - prev) / prev * 100, 1)
+
+    trends = {
+        'total': calc_trend(stats['total'], prev_stats['total']),
+        'by_type': {},
+        'by_risk': {},
+        'by_status': {}
+    }
+
+    for event_type in stats['by_type']:
+        current = stats['by_type'].get(event_type, 0)
+        prev = prev_stats['by_type'].get(event_type, 0)
+        trends['by_type'][event_type] = calc_trend(current, prev)
+
+    for risk_level in stats['by_risk']:
+        current = stats['by_risk'].get(risk_level, 0)
+        prev = prev_stats['by_risk'].get(risk_level, 0)
+        trends['by_risk'][risk_level] = calc_trend(current, prev)
+
+    for status in stats['by_status']:
+        current = stats['by_status'].get(status, 0)
+        prev = prev_stats['by_status'].get(status, 0)
+        trends['by_status'][status] = calc_trend(current, prev)
+
+    stats['trends'] = trends
+
+    # 计算确认率：已确认 / (已确认 + 误报)
+    confirmed = stats['by_status'].get('confirmed', 0)
+    false_alarm = stats['by_status'].get('false_alarm', 0)
+    if confirmed + false_alarm > 0:
+        stats['confirmation_rate'] = round(confirmed / (confirmed + false_alarm) * 100, 1)
+    else:
+        stats['confirmation_rate'] = None
+
     return jsonify(stats)
+
+
+@events_bp.route('/api/events/hourly', methods=['GET'])
+@token_required
+async def hourly_trend():
+    """
+    小时级事件趋势（过去24小时）
+
+    返回:
+        {
+            "hours": ["00:00", "01:00", ...],
+            "by_type": {
+                "FALLEN": [0, 1, 2, ...],
+                "STILLNESS": [...],
+                "NIGHT_ABNORMAL": [...]
+            }
+        }
+    """
+    user_id = request.current_user['user_id']
+    db = next(get_db())
+
+    now = datetime.now()
+    start_time_threshold = now - timedelta(hours=24)
+
+    events = db.query(Event).filter(
+        Event.start_time >= start_time_threshold,
+        Event.user_id == user_id
+    ).all()
+
+    # 直接使用数据库中的事件类型名称
+    event_types = ['FALLEN', 'STILLNESS', 'NIGHT_ABNORMAL']
+
+    # 初始化 24 小时的数据结构
+    hours = [(now - timedelta(hours=23-i)).strftime('%H:00') for i in range(24)]
+    hourly_data = {hour: {t: 0 for t in event_types} for hour in hours}
+
+    for event in events:
+        hour_key = event.start_time.strftime('%H:00')
+        if hour_key in hourly_data and event.event_type in event_types:
+            hourly_data[hour_key][event.event_type] += 1
+
+    # 转换为前端需要的格式
+    result = {
+        'hours': hours,
+        'by_type': {
+            t: [hourly_data[h][t] for h in hours] for t in event_types
+        }
+    }
+
+    return jsonify(result)
+
+
+@events_bp.route('/api/events/daily', methods=['GET'])
+@token_required
+async def daily_trend():
+    """
+    每日事件趋势
+
+    查询参数:
+        days: 统计天数（默认7）
+
+    返回:
+        {
+            "dates": ["03-24", "03-25", ...],
+            "by_type": {
+                "FALLEN": [2, 1, 3, ...],
+                "STILLNESS": [...],
+                "NIGHT_ABNORMAL": [...]
+            }
+        }
+    """
+    user_id = request.current_user['user_id']
+    days = int(request.args.get('days', 7))
+    db = next(get_db())
+
+    now = datetime.now()
+    start_date = (now - timedelta(days=days-1)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    events = db.query(Event).filter(
+        Event.start_time >= start_date,
+        Event.user_id == user_id
+    ).all()
+
+    # 直接使用数据库中的事件类型名称
+    event_types = ['FALLEN', 'STILLNESS', 'NIGHT_ABNORMAL']
+
+    # 初始化每天的数据结构
+    dates = []
+    daily_data = {}
+    for i in range(days):
+        date = (now - timedelta(days=days-1-i)).strftime('%m-%d')
+        dates.append(date)
+        daily_data[date] = {t: 0 for t in event_types}
+
+    for event in events:
+        date_key = event.start_time.strftime('%m-%d')
+        if date_key in daily_data and event.event_type in event_types:
+            daily_data[date_key][event.event_type] += 1
+
+    result = {
+        'dates': dates,
+        'by_type': {
+            t: [daily_data[d][t] for d in dates] for t in event_types
+        }
+    }
+
+    return jsonify(result)

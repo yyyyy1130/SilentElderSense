@@ -90,6 +90,10 @@ async def process_video_ws(video_id: str):
     """
     WebSocket 视频处理
 
+    查询参数:
+        persist: 是否持久化事件到数据库
+        user_id: 用户ID（持久化模式下必需）
+
     发送格式:
     {
         "type": "progress" | "frame" | "complete" | "error",
@@ -100,6 +104,13 @@ async def process_video_ws(video_id: str):
         "results": [...]          // 完成时
     }
     """
+    # 获取查询参数
+    query_string = websocket.query_string or b''
+    from urllib.parse import parse_qs
+    params = parse_qs(query_string.decode())
+    persist = params.get('persist', ['false'])[0].lower() == 'true'
+    user_id = int(params.get('user_id', [0])[0]) if persist else 0
+
     # 查找视频文件
     video_path = None
     for ext in ['.mp4', '.avi', '.mov', '.mkv', '.webm']:
@@ -115,7 +126,37 @@ async def process_video_ws(video_id: str):
 
     detector = get_detector()
     session_id = detector.create_session()
-    risk_engine.create_session(session_id, is_live=False)
+    risk_engine.create_session(session_id, is_live=persist, user_id=user_id if persist else None)
+
+    # 持久化模式下的活跃事件跟踪
+    active_events = {} if persist else None
+    last_db_update = time.time() if persist else 0
+
+    async def update_active_events_end_time():
+        """每秒更新活跃事件的 end_time（持久化模式）"""
+        nonlocal last_db_update
+        if not persist or not active_events:
+            return
+        now = time.time()
+        if now - last_db_update < 1.0:
+            return
+        from auth.models import SessionLocal
+        db = SessionLocal()
+        try:
+            now_dt = datetime.fromtimestamp(now)
+            for (person_id, event_type) in active_events.keys():
+                db.query(Event).filter(
+                    Event.video_id == video_id,
+                    Event.person_id == person_id,
+                    Event.event_type == event_type,
+                ).update({'end_time': now_dt})
+            db.commit()
+            last_db_update = now
+        except Exception as e:
+            print(f"[ERROR] 更新 end_time 失败: {e}")
+            db.rollback()
+        finally:
+            db.close()
 
     try:
         cap = cv2.VideoCapture(video_path)
@@ -132,7 +173,8 @@ async def process_video_ws(video_id: str):
             'type': 'info',
             'total_frames': total_frames,
             'fps': fps,
-            'frame_interval': frame_interval
+            'frame_interval': frame_interval,
+            'persist': persist
         })
 
         frame_count = 0
@@ -156,9 +198,29 @@ async def process_video_ws(video_id: str):
                 now = time.time()
 
                 # 风险判定
-                risk_results, _ = risk_engine.process(
+                risk_results, event_changes = risk_engine.process(
                     session_id, result.frame_result.persons, now
                 )
+
+                # 持久化事件变更（持久化模式）
+                if persist and event_changes and user_id:
+                    from auth.models import SessionLocal
+                    db = SessionLocal()
+                    try:
+                        for ch in event_changes:
+                            _persist_event_change(db, ch, video_id, user_id)
+                            key = (ch.person_id, ch.event_type)
+                            if ch.change_type == 'ended':
+                                active_events.pop(key, None)
+                            else:
+                                active_events[key] = now
+                        db.commit()
+                    except Exception as e:
+                        print(f"[ERROR] 事件持久化失败: {e}")
+                        db.rollback()
+                    finally:
+                        db.close()
+                    await update_active_events_end_time()
 
                 # 在已模糊的帧上绘制风险框
                 for risk in risk_results:
@@ -202,7 +264,23 @@ async def process_video_ws(video_id: str):
 
         cap.release()
         detector.close_session(session_id)
-        risk_engine.close_session(session_id)
+
+        # 持久化模式下关闭会话时处理未结束的事件
+        ended_changes = risk_engine.close_session(session_id, now=time.time()) if persist else None
+        if persist and ended_changes and user_id:
+            from auth.models import SessionLocal
+            db = SessionLocal()
+            try:
+                for ch in ended_changes:
+                    _persist_event_change(db, ch, video_id, user_id)
+                db.commit()
+            except Exception as e:
+                print(f"[ERROR] 事件持久化失败: {e}")
+                db.rollback()
+            finally:
+                db.close()
+        else:
+            risk_engine.close_session(session_id)
 
         await websocket.send_json({
             'type': 'complete',

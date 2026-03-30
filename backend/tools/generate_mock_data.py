@@ -1,6 +1,7 @@
 """
 模拟数据生成脚本
-用于生成测试数据：用户、事件、告警配置、告警历史
+
+生成测试用户和模拟事件数据，模拟真实检测逻辑的写入方式
 """
 import os
 import sys
@@ -15,7 +16,6 @@ from sqlalchemy.orm import sessionmaker
 from config import DATA_DIR
 from auth.models import Base, User
 from events.models import Event
-from alerts.models import AlertConfig, AlertHistory
 
 DB_NAME = "db.sqlite3"
 db_path = os.path.join(DATA_DIR, DB_NAME)
@@ -26,23 +26,20 @@ Session = sessionmaker(bind=engine)
 db = Session()
 
 
-def random_datetime(days_back=30):
-    """生成过去N天内的随机时间"""
-    now = datetime.utcnow()
-    random_days = random.randint(0, days_back)
-    random_hours = random.randint(0, 23)
-    random_minutes = random.randint(0, 59)
-    return now - timedelta(days=random_days, hours=random_hours, minutes=random_minutes)
+def random_datetime_in_range(start_dt: datetime, end_dt: datetime) -> datetime:
+    """生成指定时间范围内的随机时间"""
+    delta = end_dt - start_dt
+    random_seconds = random.randint(0, int(delta.total_seconds()))
+    return start_dt + timedelta(seconds=random_seconds)
 
 
-def generate_users(count=5):
-    """生成用户数据"""
-    print(f"[1/4] 生成 {count} 个用户...")
+def generate_users():
+    """生成两个测试用户：admin 和 test"""
+    print("[1/2] 生成用户...")
 
     users = []
-    usernames = ['zhangsan', 'lisi', 'wangwu', 'zhaoliu', 'sunqi', 'zhouba', 'wujiu', 'zhengshi']
 
-    # 检查管理员是否存在
+    # 检查并创建 admin 用户（基础用户，无事件数据）
     admin = db.query(User).filter_by(username='admin').first()
     if not admin:
         admin = User(
@@ -52,68 +49,139 @@ def generate_users(count=5):
         )
         admin.set_password('123456')
         db.add(admin)
-        db.commit()
     users.append(admin)
 
-    # 生成其他用户
-    for i in range(count - 1):
-        username = usernames[i] if i < len(usernames) else f'user{i+1}'
-        # 检查用户是否已存在
-        existing = db.query(User).filter_by(username=username).first()
-        if existing:
-            users.append(existing)
-            continue
-        user = User(
-            username=username,
-            email=f'{username}@example.com',
-            is_admin=random.choice([True, False])
+    # 检查并创建 test 用户（测试用户，包含所有事件数据）
+    test = db.query(User).filter_by(username='test').first()
+    if not test:
+        test = User(
+            username='test',
+            email='test@example.com',
+            is_admin=False
         )
-        user.set_password('123456')
-        db.add(user)
-        users.append(user)
+        test.set_password('123456')
+        db.add(test)
+    users.append(test)
 
     db.commit()
-    print(f"      已准备 {len(users)} 个用户")
+    print("      已准备用户: admin, test (密码均为 123456)")
     return users
 
 
-def generate_events(users, count=50):
-    """生成事件数据"""
-    print(f"[2/4] 生成 {count} 条事件...")
+def generate_events(test_user, count=None, days_back=7):
+    """
+    为 test 用户生成事件数据，模拟真实检测逻辑
 
-    event_types = ['FALL', 'STATIC', 'NIGHT_ABNORMAL']
-    risk_levels = ['HIGH', 'MEDIUM', 'LOW']
+    参数:
+        test_user: 测试用户对象
+        count: 事件总数（None 则随机 100-200）
+        days_back: 时间跨度（天数），以当前时间为最后事件时间
+
+    事件类型与风险等级对应：
+      FALLEN:         LOW(不可能), MEDIUM(连续5帧), HIGH(持续≥1s)
+      STILLNESS:      LOW(30s静止), MEDIUM(持续≥60s)
+      NIGHT_ABNORMAL: MEDIUM(夜间+静止+实时流)
+
+    时间分布：所有事件类型均在 24 小时内随机分布
+    """
+    # 随机事件总数（100-200）
+    if count is None:
+        count = random.randint(100, 200)
+
+    print(f"[2/2] 为 test 用户生成 {count} 条事件（过去 {days_back} 天）...")
+
+    # 时间范围：过去 days_back 天，以当前时间为结束点
+    end_dt = datetime.now()
+    start_dt = end_dt - timedelta(days=days_back)
+
+    # 事件类型（与实际检测逻辑一致）
+    event_types = ['FALLEN', 'STILLNESS', 'NIGHT_ABNORMAL']
+
+    # 处理状态分布
     statuses = ['pending', 'confirmed', 'false_alarm']
+    status_weights = [0.3, 0.5, 0.2]  # 30%待处理, 50%已确认, 20%误报
 
     events = []
-    for i in range(count):
-        user = random.choice(users)
-        event_type = random.choice(event_types)
-        risk_level = random.choice(risk_levels)
 
-        # 根据事件类型设置不同的持续时间
-        if event_type == 'FALL':
-            duration = random.uniform(1.0, 10.0)
-        elif event_type == 'STATIC':
-            duration = random.uniform(60.0, 600.0)  # 1-10分钟
+    # 随机分配事件类型数量（不均分）
+    # 使用随机权重，确保每种类型至少有少量数据
+    type_weights = [random.uniform(0.15, 0.5) for _ in range(3)]
+    total_weight = sum(type_weights)
+    type_weights = [w / total_weight for w in type_weights]
+
+    counts_per_type = [int(count * w) for w in type_weights]
+    # 将余数分配给随机一个类型
+    remainder = count - sum(counts_per_type)
+    if remainder > 0:
+        counts_per_type[random.randint(0, 2)] += remainder
+
+    print(f"      事件类型分布: FALLEN={counts_per_type[0]}, STILLNESS={counts_per_type[1]}, NIGHT_ABNORMAL={counts_per_type[2]}")
+
+    # 预生成所有事件时间
+    event_times = []
+
+    # 生成 FALLEN 事件时间（随机分布在7天内）
+    for _ in range(counts_per_type[0]):
+        event_times.append(('FALLEN', random_datetime_in_range(start_dt, end_dt)))
+
+    # 生成 STILLNESS 事件时间（随机分布在7天内）
+    for _ in range(counts_per_type[1]):
+        event_times.append(('STILLNESS', random_datetime_in_range(start_dt, end_dt)))
+
+    # 生成 NIGHT_ABNORMAL 事件时间（24小时随机分布）
+    for _ in range(counts_per_type[2]):
+        event_times.append(('NIGHT_ABNORMAL', random_datetime_in_range(start_dt, end_dt)))
+
+    # 按时间排序，确保最后的事件接近当前时间
+    event_times.sort(key=lambda x: x[1])
+
+    for i, (event_type, start_time) in enumerate(event_times):
+        # 根据事件类型确定风险等级和持续时间
+        if event_type == 'FALLEN':
+            # 跌倒：MEDIUM 或 HIGH，持续时间较短
+            risk_level = random.choices(['MEDIUM', 'HIGH'], weights=[0.4, 0.6])[0]
+            duration_secs = random.uniform(2.0, 15.0)  # 跌倒持续2-15秒
+        elif event_type == 'STILLNESS':
+            # 静止：LOW 或 MEDIUM，持续时间较长
+            risk_level = random.choices(['LOW', 'MEDIUM'], weights=[0.5, 0.5])[0]
+            duration_secs = random.uniform(30.0, 300.0)  # 静止持续30秒-5分钟
         else:  # NIGHT_ABNORMAL
-            duration = random.uniform(30.0, 300.0)
+            # 夜间异常：固定 MEDIUM
+            risk_level = 'MEDIUM'
+            duration_secs = random.uniform(60.0, 180.0)  # 夜间异常持续1-3分钟
 
-        start_time = random_datetime(30)
-        end_time = start_time + timedelta(seconds=duration)
+        # 结束时间
+        end_time = start_time + timedelta(seconds=duration_secs)
+
+        # 帧数估算（假设 25fps，取整）
+        fps = 25
+        frame_count = int(duration_secs * fps * random.uniform(0.8, 1.2))
+
+        # 模拟视频会话ID和人员ID
+        video_id = f"vid_{random.randint(1000, 9999)}"
+        person_id = random.randint(0, 3)  # 常见场景：0-3人
+
+        # 处理状态
+        status = random.choices(statuses, weights=status_weights)[0]
+
+        # 备注（模拟人工处理记录）
+        notes_map = {
+            'pending': '',
+            'confirmed': random.choice(['已确认', '已通知家属', '已处理']),
+            'false_alarm': random.choice(['误报', '宠物活动', '光线变化'])
+        }
 
         event = Event(
-            user_id=user.id,
-            video_id=f'vid_{random.randint(1000, 9999)}',
-            person_id=random.randint(0, 5),
+            user_id=test_user.id,
+            video_id=video_id,
+            person_id=person_id,
             event_type=event_type,
             risk_level=risk_level,
             start_time=start_time,
             end_time=end_time,
-            duration=round(duration, 2),
-            frame_count=random.randint(5, 100),
-            status=random.choice(statuses),
-            notes=random.choice(['', '已确认处理', '误报', '需要关注', '已通知家属', ''])
+            frame_count=frame_count,
+            status=status,
+            notes=notes_map[status]
         )
         db.add(event)
         events.append(event)
@@ -123,92 +191,8 @@ def generate_events(users, count=50):
 
     db.commit()
     print(f"      已生成 {len(events)} 条事件")
+    print(f"      时间范围: {start_dt.strftime('%Y-%m-%d %H:%M')} ~ {end_dt.strftime('%Y-%m-%d %H:%M')}")
     return events
-
-
-def generate_alert_configs(users):
-    """生成告警配置"""
-    print(f"[3/4] 生成告警配置...")
-
-    configs = []
-    for user in users:
-        config = AlertConfig(
-            user_id=user.id,
-            high_alert_methods='sms,email,app',
-            medium_alert_methods='email,app',
-            low_alert_methods='app',
-            emergency_contact=f'紧急联系人{user.id}',
-            emergency_phone=f'138{random.randint(10000000, 99999999)}',
-            email=user.email,
-            quiet_hours_start='22:00',
-            quiet_hours_end='07:00',
-            bypass_quiet_hours=True
-        )
-        db.add(config)
-        configs.append(config)
-
-    db.commit()
-    print(f"      已生成 {len(configs)} 条告警配置")
-    return configs
-
-
-def generate_alert_histories(users, events, count=30):
-    """生成告警历史"""
-    print(f"[4/4] 生成 {count} 条告警历史...")
-
-    alert_types = ['sms', 'email', 'app', 'push']
-    statuses = ['pending', 'sent', 'failed', 'acknowledged']
-
-    histories = []
-    for i in range(count):
-        user = random.choice(users)
-        event = random.choice(events) if events else None
-
-        risk_level = random.choice(['HIGH', 'MEDIUM', 'LOW'])
-        event_type = random.choice(['FALL', 'STATIC', 'NIGHT_ABNORMAL'])
-
-        # 根据风险等级确定告警级别
-        if risk_level == 'HIGH':
-            alert_level = 3
-        elif risk_level == 'MEDIUM':
-            alert_level = 2
-        else:
-            alert_level = 1
-
-        alert_type = random.choice(alert_types)
-        status = random.choice(statuses)
-
-        title_map = {
-            'FALL': '跌倒检测告警',
-            'STATIC': '长时间静止告警',
-            'NIGHT_ABNORMAL': '夜间异常活动告警'
-        }
-        risk_map = {
-            'HIGH': '高风险',
-            'MEDIUM': '中风险',
-            'LOW': '低风险'
-        }
-
-        history = AlertHistory(
-            user_id=user.id,
-            event_id=event.id if event else None,
-            alert_level=alert_level,
-            alert_type=alert_type,
-            risk_level=risk_level,
-            event_type=event_type,
-            title=f"【{risk_map[risk_level]}】{title_map[event_type]}",
-            message=f"检测到{title_map[event_type]}，风险等级：{risk_map[risk_level]}，请及时关注。",
-            status=status,
-            recipient=f'138{random.randint(10000000, 99999999)}' if alert_type == 'sms' else user.email,
-            sent_at=random_datetime(7) if status in ['sent', 'acknowledged'] else None,
-            acknowledged_at=random_datetime(3) if status == 'acknowledged' else None
-        )
-        db.add(history)
-        histories.append(history)
-
-    db.commit()
-    print(f"      已生成 {len(histories)} 条告警历史")
-    return histories
 
 
 def print_summary():
@@ -219,37 +203,51 @@ def print_summary():
 
     user_count = db.query(User).count()
     event_count = db.query(Event).count()
-    alert_config_count = db.query(AlertConfig).count()
-    alert_history_count = db.query(AlertHistory).count()
 
     print(f"  用户数量:       {user_count}")
     print(f"  事件数量:       {event_count}")
-    print(f"  告警配置数量:   {alert_config_count}")
-    print(f"  告警历史数量:   {alert_history_count}")
 
-    # 事件统计
+    # 用户列表
+    print("\n用户列表:")
+    for user in db.query(User).all():
+        event_cnt = db.query(Event).filter(Event.user_id == user.id).count()
+        print(f"  {user.username} / 123456 - {event_cnt} 条事件")
+
+    # 时间范围
+    first_event = db.query(Event).order_by(Event.start_time.asc()).first()
+    last_event = db.query(Event).order_by(Event.start_time.desc()).first()
+    if first_event and last_event:
+        print(f"\n时间范围:")
+        print(f"  最早事件: {first_event.start_time.strftime('%Y-%m-%d %H:%M')}")
+        print(f"  最新事件: {last_event.start_time.strftime('%Y-%m-%d %H:%M')}")
+
+    # 事件类型分布
     print("\n事件类型分布:")
-    for event_type in ['FALL', 'STATIC', 'NIGHT_ABNORMAL']:
+    for event_type in ['FALLEN', 'STILLNESS', 'NIGHT_ABNORMAL']:
         count = db.query(Event).filter(Event.event_type == event_type).count()
         print(f"  {event_type}: {count}")
 
+    # 风险等级分布
     print("\n风险等级分布:")
     for risk_level in ['HIGH', 'MEDIUM', 'LOW']:
         count = db.query(Event).filter(Event.risk_level == risk_level).count()
         print(f"  {risk_level}: {count}")
 
-    print("\n默认登录账号: admin / 123456")
-    print("="*50)
+    # 处理状态分布
+    print("\n处理状态分布:")
+    for status in ['pending', 'confirmed', 'false_alarm']:
+        count = db.query(Event).filter(Event.status == status).count()
+        print(f"  {status}: {count}")
+
+    print("\n" + "="*50)
 
 
 def clear_mock_data():
     """清空模拟数据（保留用户）"""
-    print("[0/4] 清空已有模拟数据...")
-    db.query(AlertHistory).delete()
-    db.query(AlertConfig).delete()
+    print("[0/2] 清空已有事件数据...")
     db.query(Event).delete()
     db.commit()
-    print("      已清空事件、告警配置、告警历史数据")
+    print("      已清空事件数据")
 
 
 def main():
@@ -258,14 +256,15 @@ def main():
     print("开始生成模拟数据...")
     print("="*50 + "\n")
 
-    # 清空已有模拟数据
+    # 清空已有事件数据
     clear_mock_data()
 
-    # 生成数据
-    users = generate_users(5)
-    events = generate_events(users, 50)
-    generate_alert_configs(users)
-    generate_alert_histories(users, events, 30)
+    # 生成用户
+    users = generate_users()
+    test_user = users[1]  # test 用户
+
+    # 为 test 用户生成事件（过去7天，数量随机100-200）
+    generate_events(test_user, days_back=7)
 
     # 打印统计
     print_summary()

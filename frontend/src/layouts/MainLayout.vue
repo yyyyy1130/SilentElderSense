@@ -151,6 +151,15 @@ const mainMenuItems = computed(() => [
     ])
   },
   {
+    path: '/visualization',
+    label: '可视化大屏',
+    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+      h('rect', { x: '2', y: '3', width: '20', height: '14', rx: '2', ry: '2' }),
+      h('line', { x1: '8', y1: '21', x2: '16', y2: '21' }),
+      h('line', { x1: '12', y1: '17', x2: '12', y2: '21' })
+    ])
+  },
+  {
     path: '/system',
     label: '系统设置',
     icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [

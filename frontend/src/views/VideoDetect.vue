@@ -30,6 +30,12 @@
           <span class="file-size">{{ formatSize(selectedFile.size) }}</span>
         </div>
 
+        <!-- 持久化开关 -->
+        <div class="persist-switch" v-if="selectedFile && !isProcessing && !isCompleted">
+          <el-switch v-model="enablePersist" />
+          <span class="switch-label">持久化模式（写入数据库）</span>
+        </div>
+
         <el-button
           v-if="selectedFile && !isProcessing && !isCompleted"
           type="primary"
@@ -133,6 +139,9 @@ import { Upload, VideoCamera } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { uploadVideo, createVideoProcessWebSocket } from '@/api/monitor'
 import { getRiskTagType, getRiskLabel } from '@/utils/risk'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 // 状态
 const uploadRef = ref(null)
@@ -145,6 +154,7 @@ const isCompleted = ref(false)
 const progress = ref(0)
 const statusText = ref('')
 const videoId = ref('')
+const enablePersist = ref(false)  // 持久化开关
 
 // 帧显示
 const currentFrameImage = ref(null)
@@ -210,7 +220,18 @@ const startProcessing = async () => {
 
 // WebSocket
 const connectWebSocket = () => {
-  ws = createVideoProcessWebSocket(videoId.value)
+  // 持久化模式需要用户登录
+  if (enablePersist.value) {
+    if (!authStore.isAuthenticated) {
+      ElMessage.error('持久化模式需要登录，请先登录')
+      resetState()
+      return
+    }
+    const userId = authStore.user?.id
+    ws = new WebSocket(`ws://localhost:8000/ws/video/${videoId.value}?persist=true&user_id=${userId}`)
+  } else {
+    ws = new WebSocket(`ws://localhost:8000/ws/video/${videoId.value}`)
+  }
 
   ws.onopen = () => console.log('[WS] 连接已建立')
 
@@ -367,6 +388,17 @@ onUnmounted(() => {
 .file-size {
   color: #909399;
   font-size: 12px;
+}
+
+.persist-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.persist-switch .switch-label {
+  font-size: 14px;
+  color: #606266;
 }
 
 .progress-section {

@@ -95,25 +95,6 @@
             <div ref="typeChartRef" class="chart"></div>
           </div>
         </div>
-
-        <!-- 位置热力图 -->
-        <div class="card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">
-              <span class="title-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="3" y1="9" x2="21" y2="9"/>
-                  <line x1="9" y1="21" x2="9" y2="9"/>
-                </svg>
-              </span>
-              位置热力分布
-            </h3>
-          </div>
-          <div class="card-body">
-            <div ref="heatmapChartRef" class="chart"></div>
-          </div>
-        </div>
       </aside>
 
       <!-- 中间主区域 -->
@@ -334,8 +315,9 @@
 import { ref, onMounted, onUnmounted, nextTick, computed, h } from 'vue'
 import * as echarts from 'echarts'
 import { useRouter } from 'vue-router'
-import { getEvents, getEventStats } from '@/api/events'
+import { getEvents, getEventStats, getHourlyTrend } from '@/api/events'
 import { getAlertHistory, getAlertStats } from '@/api/alerts'
+import { getSystemStatus } from '@/api/system'
 
 const router = useRouter()
 
@@ -347,21 +329,21 @@ const currentDate = ref('')
 const totalEvents = ref(0)
 const highRiskEvents = ref(0)
 const todayEvents = ref(0)
-const accuracy = ref(94.5)
+const confirmationRate = ref(null)  // 确认率
+const trends = ref({ total: null, by_type: {} })  // 趋势数据
 
 // 图表引用
 const typeChartRef = ref(null)
-const heatmapChartRef = ref(null)
 const trendChartRef = ref(null)
 
 let typeChart = null
-let heatmapChart = null
 let trendChart = null
 let timeInterval = null
 
 // 事件数据
 const recentEvents = ref([])
 const alerts = ref([])
+const hourlyTrendData = ref({ hours: [], by_type: {} })
 
 // 统计数据
 const eventStats = ref({
@@ -376,7 +358,7 @@ const statsData = computed(() => [
     label: '总事件数',
     value: totalEvents.value,
     type: 'primary',
-    trend: 5.2,
+    trend: trends.value.total,
     animate: true,
     icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
       h('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })
@@ -386,7 +368,7 @@ const statsData = computed(() => [
     label: '高风险',
     value: highRiskEvents.value,
     type: 'danger',
-    trend: -2.1,
+    trend: trends.value.by_risk?.HIGH,
     animate: true,
     icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
       h('path', { d: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z' }),
@@ -407,8 +389,8 @@ const statsData = computed(() => [
     ])
   },
   {
-    label: '识别准确率',
-    value: `${accuracy.value}%`,
+    label: '确认率',
+    value: confirmationRate.value !== null ? `${confirmationRate.value}%` : '-',
     type: 'success',
     icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
       h('path', { d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14' }),
@@ -432,7 +414,11 @@ const getRiskLabel = (level) => {
 }
 
 const getTypeLabel = (type) => {
-  const map = { FALL: '跌倒检测', STILLNESS: '长时间静止', NIGHT_ACTIVITY: '夜间异常活动' }
+  const map = {
+    FALLEN: '跌倒检测',
+    STILLNESS: '长时间静止',
+    NIGHT_ABNORMAL: '夜间异常活动'
+  }
   return map[type] || type
 }
 
@@ -460,10 +446,12 @@ const goToMonitor = () => {
 // 加载数据
 const loadData = async () => {
   try {
-    const [eventsRes, statsRes, alertsRes] = await Promise.all([
+    const [eventsRes, statsRes, alertsRes, hourlyRes, statusRes] = await Promise.all([
       getEvents({ per_page: 5 }),
       getEventStats({ days: 7 }),
-      getAlertHistory({ per_page: 5 })
+      getAlertHistory({ per_page: 5 }),
+      getHourlyTrend(),
+      getSystemStatus()
     ])
 
     recentEvents.value = (eventsRes.events || []).map(e => ({
@@ -479,6 +467,8 @@ const loadData = async () => {
     totalEvents.value = statsRes.total || 0
     highRiskEvents.value = statsRes.by_risk?.HIGH || 0
     todayEvents.value = statsRes.by_status?.pending || 0
+    confirmationRate.value = statsRes.confirmation_rate
+    trends.value = statsRes.trends || { total: null, by_type: {}, by_risk: {} }
 
     alerts.value = (alertsRes.alerts || []).map(a => ({
       id: a.id,
@@ -486,6 +476,12 @@ const loadData = async () => {
       message: getTypeLabel(a.event_type) + '告警',
       time: a.created_at
     }))
+
+    // 小时级趋势数据
+    hourlyTrendData.value = hourlyRes
+
+    // 系统服务状态
+    systemServices.value = statusRes.services || []
 
     updateCharts()
   } catch (error) {
@@ -514,27 +510,36 @@ const updateTypeChart = () => {
       trigger: 'item',
       backgroundColor: 'rgba(26,26,36,0.95)',
       borderColor: 'rgba(255,255,255,0.1)',
-      textStyle: { color: '#fff' }
+      textStyle: { color: '#fff' },
+      formatter: '{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'horizontal',
+      bottom: 0,
+      left: 'center',
+      itemWidth: 12,
+      itemHeight: 12,
+      itemGap: 16,
+      textStyle: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
+      data: ['跌倒', '静止', '夜间异常']
     },
     series: [{
       type: 'pie',
-      radius: ['45%', '75%'],
-      center: ['50%', '50%'],
+      radius: ['40%', '70%'],
+      center: ['50%', '45%'],
       avoidLabelOverlap: true,
       itemStyle: {
-        borderRadius: 8,
+        borderRadius: 6,
         borderColor: 'rgba(26,26,36,0.8)',
-        borderWidth: 3
+        borderWidth: 2
       },
       label: {
         show: true,
-        color: 'rgba(255,255,255,0.7)',
-        fontSize: 11,
-        formatter: '{b}\n{d}%'
-      },
-      labelLine: {
-        show: true,
-        lineStyle: { color: 'rgba(255,255,255,0.3)' }
+        position: 'inside',
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 600,
+        formatter: '{d}%'
       },
       emphasis: {
         itemStyle: {
@@ -543,72 +548,10 @@ const updateTypeChart = () => {
         }
       },
       data: [
-        { value: stats.by_type?.FALL || 0, name: '跌倒检测', itemStyle: { color: '#f97316' } },
-        { value: stats.by_type?.STILLNESS || 0, name: '长时间静止', itemStyle: { color: '#eab308' } },
-        { value: stats.by_type?.NIGHT_ACTIVITY || 0, name: '夜间异常', itemStyle: { color: '#3b82f6' } }
+        { value: stats.by_type?.FALLEN || 0, name: '跌倒', itemStyle: { color: '#f97316' } },
+        { value: stats.by_type?.STILLNESS || 0, name: '静止', itemStyle: { color: '#eab308' } },
+        { value: stats.by_type?.NIGHT_ABNORMAL || 0, name: '夜间异常', itemStyle: { color: '#3b82f6' } }
       ]
-    }]
-  })
-}
-
-const initHeatmapChart = () => {
-  if (!heatmapChartRef.value) return
-  heatmapChart = echarts.init(heatmapChartRef.value)
-  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`)
-  const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-  const data = []
-  for (let i = 0; i < 7; i++) {
-    for (let j = 0; j < 24; j++) {
-      data.push([j, i, Math.floor(Math.random() * 10)])
-    }
-  }
-
-  heatmapChart.setOption({
-    ...chartTheme,
-    tooltip: {
-      position: 'top',
-      backgroundColor: 'rgba(26,26,36,0.95)',
-      borderColor: 'rgba(255,255,255,0.1)',
-      textStyle: { color: '#fff' }
-    },
-    grid: {
-      top: 10,
-      left: 50,
-      right: 10,
-      bottom: 30
-    },
-    xAxis: {
-      type: 'category',
-      data: hours,
-      splitArea: { show: false },
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-      axisLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10, interval: 5 }
-    },
-    yAxis: {
-      type: 'category',
-      data: days,
-      splitArea: { show: false },
-      axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-      axisLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11 }
-    },
-    visualMap: {
-      min: 0,
-      max: 10,
-      show: false,
-      inRange: {
-        color: ['#1e3a5f', '#2563eb', '#f97316', '#ef4444']
-      }
-    },
-    series: [{
-      type: 'heatmap',
-      data: data,
-      label: { show: false },
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
     }]
   })
 }
@@ -616,7 +559,13 @@ const initHeatmapChart = () => {
 const initTrendChart = () => {
   if (!trendChartRef.value) return
   trendChart = echarts.init(trendChartRef.value)
-  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`)
+  updateTrendChart()
+}
+
+const updateTrendChart = () => {
+  if (!trendChart) return
+  const data = hourlyTrendData.value
+  const hours = data.hours || Array.from({ length: 24 }, (_, i) => `${i}:00`)
 
   trendChart.setOption({
     ...chartTheme,
@@ -626,8 +575,14 @@ const initTrendChart = () => {
       borderColor: 'rgba(255,255,255,0.1)',
       textStyle: { color: '#fff' }
     },
+    legend: {
+      data: ['跌倒检测', '长时间静止', '夜间异常活动'],
+      textStyle: { color: 'rgba(255,255,255,0.6)' },
+      top: 0,
+      right: 0
+    },
     grid: {
-      top: 20,
+      top: 40,
       left: 40,
       right: 20,
       bottom: 30
@@ -641,43 +596,69 @@ const initTrendChart = () => {
     },
     yAxis: {
       type: 'value',
-      name: '风险指数',
+      name: '事件数',
       nameTextStyle: { color: 'rgba(255,255,255,0.4)', fontSize: 10 },
       axisLine: { show: false },
       splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } },
       axisLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 10 }
     },
-    series: [{
-      name: '风险指数',
-      type: 'line',
-      smooth: true,
-      symbol: 'none',
-      data: [2, 1, 1, 2, 3, 2, 4, 5, 6, 5, 4, 3, 4, 5, 7, 8, 6, 5, 4, 3, 2, 2, 1, 1],
-      lineStyle: {
-        width: 3,
-        color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-          { offset: 0, color: '#3b82f6' },
-          { offset: 0.5, color: '#f97316' },
-          { offset: 1, color: '#ef4444' }
-        ])
+    series: [
+      {
+        name: '跌倒检测',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: data.by_type?.FALLEN || [],
+        lineStyle: { width: 2, color: '#f97316' },
+        itemStyle: { color: '#f97316' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(249, 115, 22, 0.3)' },
+            { offset: 1, color: 'rgba(249, 115, 22, 0)' }
+          ])
+        }
       },
-      areaStyle: {
-        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(249, 115, 22, 0.3)' },
-          { offset: 1, color: 'rgba(249, 115, 22, 0)' }
-        ])
+      {
+        name: '长时间静止',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: data.by_type?.STILLNESS || [],
+        lineStyle: { width: 2, color: '#eab308' },
+        itemStyle: { color: '#eab308' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(234, 179, 8, 0.3)' },
+            { offset: 1, color: 'rgba(234, 179, 8, 0)' }
+          ])
+        }
+      },
+      {
+        name: '夜间异常活动',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        data: data.by_type?.NIGHT_ABNORMAL || [],
+        lineStyle: { width: 2, color: '#3b82f6' },
+        itemStyle: { color: '#3b82f6' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(59, 130, 246, 0.3)' },
+            { offset: 1, color: 'rgba(59, 130, 246, 0)' }
+          ])
+        }
       }
-    }]
+    ]
   })
 }
 
 const updateCharts = () => {
   updateTypeChart()
+  updateTrendChart()
 }
 
 const handleResize = () => {
   typeChart?.resize()
-  heatmapChart?.resize()
   trendChart?.resize()
 }
 
@@ -689,7 +670,6 @@ onMounted(async () => {
 
   nextTick(() => {
     initTypeChart()
-    initHeatmapChart()
     initTrendChart()
     window.addEventListener('resize', handleResize)
   })
@@ -701,7 +681,6 @@ onUnmounted(() => {
   }
   window.removeEventListener('resize', handleResize)
   typeChart?.dispose()
-  heatmapChart?.dispose()
   trendChart?.dispose()
 })
 </script>

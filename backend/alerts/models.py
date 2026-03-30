@@ -71,7 +71,7 @@ class AlertHistory(Base):
     # 告警信息
     alert_type = Column(String(32), nullable=False)   # sms, email, app, push, local
     risk_level = Column(String(16), nullable=False)   # HIGH, MEDIUM, LOW
-    event_type = Column(String(32), nullable=False)   # FALL, STATIC, NIGHT_ABNORMAL
+    event_type = Column(String(32), nullable=False)   # FALLEN, STILLNESS, NIGHT_ABNORMAL
 
     # 告警内容
     title = Column(String(128), nullable=False)
