@@ -117,8 +117,8 @@ class FallDetector:
         Returns:
             SessionResult: 包含检测结果、处理后的帧
         """
-        # 1. 检测单帧
-        frame_result = self._detect_single(frame)
+        # 1. 检测单帧（实时监控时过滤顶部/底部10%区域）
+        frame_result = self._detect_single(frame, video_id)
 
         # 2. 追踪 + 计算 movement（先于人脸模糊，需要跟踪的人体框）
         frame_result = self.session_manager.process(video_id, frame_result, frame)
@@ -225,11 +225,40 @@ class FallDetector:
 
         return results
 
-    def _detect_single(self, frame: np.ndarray) -> FrameResult:
+    def _detect_single(self, frame: np.ndarray, video_id: str = None) -> FrameResult:
         """单帧检测"""
         img = self._preprocess(frame)
         outputs = self.session.run(None, {self.input_name: img})
         detections = self._postprocess(outputs)
+
+        if not detections:
+            return FrameResult(detected=False, persons=[])
+
+        # 检查是否为实时监控会话（仅实时监控时过滤顶部/底部10%区域）
+        is_live = False
+        if video_id:
+            try:
+                from detect.risk_engine import risk_engine
+                session = risk_engine._sessions.get(video_id)
+                if session and session.is_live:
+                    is_live = True
+            except ImportError:
+                pass
+
+        # 过滤顶部10%和底部10%区域的检测框（仅实时监控）
+        if is_live:
+            h = self.orig_shape[0]  # 原图高度
+            top_boundary = h * 0.1
+            bottom_boundary = h * 0.9
+
+            filtered_detections = []
+            for box, class_id, score in detections:
+                # 检测框中心点Y坐标
+                center_y = (box[1] + box[3]) / 2
+                # 只保留中心点在有效区域内的检测框
+                if top_boundary <= center_y <= bottom_boundary:
+                    filtered_detections.append((box, class_id, score))
+            detections = filtered_detections
 
         if not detections:
             return FrameResult(detected=False, persons=[])
