@@ -396,6 +396,65 @@
               </div>
             </div>
           </div>
+
+          <!-- 人脸模糊参数 -->
+          <div class="settings-card">
+            <div class="card-header">
+              <div class="header-icon privacy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+              </div>
+              <div class="header-text">
+                <h3>人脸模糊</h3>
+                <p>隐私保护的人脸检测与模糊参数</p>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">检测置信度</label>
+                  <input
+                    v-model.number="detectConfig.face_detection_confidence"
+                    type="number"
+                    min="0.1"
+                    max="1.0"
+                    step="0.1"
+                    class="form-input"
+                    placeholder="0.5"
+                  />
+                  <span class="form-hint">人脸检测的最小置信度阈值（0.1-1.0）</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">模糊强度</label>
+                  <input
+                    v-model.number="detectConfig.face_blur_strength"
+                    type="number"
+                    min="15"
+                    max="99"
+                    step="2"
+                    class="form-input"
+                    placeholder="51"
+                  />
+                  <span class="form-hint">模糊核大小，值越大越模糊（15-99，需为奇数）</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">扩展比例</label>
+                  <input
+                    v-model.number="detectConfig.face_blur_expand_ratio"
+                    type="number"
+                    min="0"
+                    max="1.0"
+                    step="0.1"
+                    class="form-input"
+                    placeholder="0.5"
+                  />
+                  <span class="form-hint">模糊区域相对于人脸框的扩展比例</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 保存按钮 -->
@@ -407,115 +466,6 @@
             </svg>
             <span>{{ detectSaving ? '保存中...' : '保存配置' }}</span>
           </button>
-        </div>
-      </section>
-
-      <!-- 告警历史 -->
-      <section v-show="activeTab === 'history'" class="content-section">
-        <div class="table-card">
-          <div class="card-header">
-            <div class="header-text">
-              <h3>告警历史记录</h3>
-              <p>查看所有告警通知记录</p>
-            </div>
-            <button class="btn-refresh" @click="loadAlertHistory" :disabled="historyLoading">
-              <svg :class="{ spinning: historyLoading }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M23 4v6h-6"/>
-                <path d="M1 20v-6h6"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-              <span>刷新</span>
-            </button>
-          </div>
-          <div class="card-body">
-            <div class="table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>告警类型</th>
-                    <th>风险等级</th>
-                    <th>通知方式</th>
-                    <th>状态</th>
-                    <th>创建时间</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="alert in alertHistory" :key="alert.id" class="table-row">
-                    <td class="cell-id">#{{ alert.id }}</td>
-                    <td>
-                      <span class="type-badge">{{ getEventTypeLabel(alert.event_type) }}</span>
-                    </td>
-                    <td>
-                      <span class="risk-badge" :class="getRiskClass(alert.risk_level)">
-                        {{ getRiskLabel(alert.risk_level) }}
-                      </span>
-                    </td>
-                    <td class="cell-method">{{ alert.alert_type || '-' }}</td>
-                    <td>
-                      <span class="status-badge" :class="getStatusClass(alert.status)">
-                        <span class="status-dot"></span>
-                        {{ getStatusLabel(alert.status) }}
-                      </span>
-                    </td>
-                    <td class="cell-time">{{ formatDateTime(alert.created_at) }}</td>
-                    <td>
-                      <div class="action-btns">
-                        <button
-                          v-if="alert.status !== 'acknowledged'"
-                          class="action-btn confirm"
-                          @click="acknowledgeAlert(alert.id)"
-                        >
-                          确认
-                        </button>
-                        <button
-                          v-if="alert.status === 'failed'"
-                          class="action-btn retry"
-                          @click="resendAlert(alert.id)"
-                        >
-                          重发
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div v-if="alertHistory.length === 0" class="empty-table">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M9 12l2 2 4-4"/>
-                  <circle cx="12" cy="12" r="10"/>
-                </svg>
-                <p>暂无告警记录</p>
-              </div>
-            </div>
-            <div class="pagination">
-              <div class="pagination-info">
-                共 <strong>{{ historyTotal }}</strong> 条记录
-              </div>
-              <div class="pagination-controls">
-                <button
-                  class="page-btn"
-                  :disabled="historyPage === 1"
-                  @click="handleHistoryPageChange(historyPage - 1)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6"/>
-                  </svg>
-                </button>
-                <span class="page-info">{{ historyPage }} / {{ historyTotalPages }}</span>
-                <button
-                  class="page-btn"
-                  :disabled="historyPage >= historyTotalPages"
-                  @click="handleHistoryPageChange(historyPage + 1)"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -614,7 +564,6 @@ import { ref, computed, onMounted, h } from 'vue'
 import {
   getAlertConfig,
   updateAlertConfig,
-  getAlertHistory,
   acknowledgeAlert as ackAlert,
   resendAlert as resendAlertApi,
   getAlertStats
@@ -647,14 +596,6 @@ const tabs = [
     ])
   },
   {
-    key: 'history',
-    label: '告警历史',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('circle', { cx: '12', cy: '12', r: '10' }),
-      h('polyline', { points: '12 6 12 12 16 14' })
-    ])
-  },
-  {
     key: 'stats',
     label: '告警统计',
     icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
@@ -667,7 +608,6 @@ const tabs = [
 
 const activeTab = ref('alert')
 const saving = ref(false)
-const historyLoading = ref(false)
 
 // 指示器样式
 const indicatorStyle = computed(() => {
@@ -702,17 +642,12 @@ const detectConfig = ref({
   stillness_escalate_secs: 60.0,
   night_start_hour: 22,
   night_end_hour: 7,
-  lost_grace_secs: 1.0
+  lost_grace_secs: 1.0,
+  face_detection_confidence: 0.5,
+  face_blur_strength: 51,
+  face_blur_expand_ratio: 0.5
 })
 const detectSaving = ref(false)
-
-// 告警历史
-const alertHistory = ref([])
-const historyPage = ref(1)
-const historyTotal = ref(0)
-const historyPageSize = 20
-
-const historyTotalPages = computed(() => Math.ceil(historyTotal.value / historyPageSize) || 1)
 
 // 告警统计
 const alertStats = ref({
@@ -848,25 +783,6 @@ const resetDetectConfig = () => {
   loadDetectConfig()
 }
 
-// 加载告警历史
-const loadAlertHistory = async () => {
-  historyLoading.value = true
-  try {
-    const response = await getAlertHistory({ page: historyPage.value, per_page: historyPageSize })
-    alertHistory.value = response.alerts || []
-    historyTotal.value = response.total || 0
-  } catch (error) {
-    console.error('加载告警历史失败:', error)
-  } finally {
-    historyLoading.value = false
-  }
-}
-
-const handleHistoryPageChange = (page) => {
-  historyPage.value = page
-  loadAlertHistory()
-}
-
 // 确认告警
 const acknowledgeAlert = async (alertId) => {
   try {
@@ -875,7 +791,6 @@ const acknowledgeAlert = async (alertId) => {
       message: '告警已确认',
       type: 'success'
     })
-    loadAlertHistory()
   } catch (error) {
     ElMessage({
       message: '确认失败',
@@ -892,7 +807,6 @@ const resendAlert = async (alertId) => {
       message: '告警已重发',
       type: 'success'
     })
-    loadAlertHistory()
   } catch (error) {
     ElMessage({
       message: '重发失败',
@@ -914,7 +828,6 @@ const loadStats = async () => {
 onMounted(() => {
   loadConfig()
   loadDetectConfig()
-  loadAlertHistory()
   loadStats()
 })
 </script>

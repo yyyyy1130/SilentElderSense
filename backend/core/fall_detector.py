@@ -1,13 +1,15 @@
 """
 跌倒检测器 - ONNX版本
 
-使用跌倒检测模型 + Haar Cascade 人脸模糊
+使用跌倒检测模型 + MediaPipe人脸检测 + ByteTrack跟踪
 返回检测数据，后端自行处理业务逻辑
 """
 import cv2
 import numpy as np
 import onnxruntime as ort
+import mediapipe as mp
 from typing import Optional, List
+from pathlib import Path
 
 from .types import FrameResult, PersonResult, SessionResult
 from .session import SessionManager
@@ -44,7 +46,7 @@ class FallDetector:
     FACE_BLUR_EXPAND_RATIO = 0.5
 
     def __init__(self,
-                 model_path: str = "core/models/fall_detection_v2.onnx",
+                 model_path: str = "core/models/fall_detection_v1.onnx",
                  conf_threshold: float = 0.3,
                  tracker_fps: float = 25.0,
                  providers: list = None):
@@ -67,16 +69,36 @@ class FallDetector:
         self.input_name = self.session.get_inputs()[0].name
         self.img_size = self.session.get_inputs()[0].shape[2]
 
-        # Haar Cascade 人脸检测器
-        self.face_cascade = cv2.CascadeClassifier(
-            cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-        )
+        # MediaPipe 人脸检测器 (全距模型)
+        self._init_mediapipe()
 
         # 会话管理（追踪）
         self.session_manager = SessionManager(tracker_fps=tracker_fps)
 
         # 保存原始图像尺寸
         self.orig_shape = None
+
+    def _init_mediapipe(self):
+        """初始化MediaPipe人脸检测"""
+        model_path = Path(__file__).parent / "models" / "blaze_face_full_range.tflite"
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"MediaPipe模型不存在: {model_path}\n"
+                "请手动下载: https://storage.googleapis.com/mediapipe-models/"
+                "face_detector/blaze_face_full_range/float16/1/blaze_face_full_range.tflite"
+            )
+
+        BaseOptions = mp.tasks.BaseOptions
+        FaceDetector = mp.tasks.vision.FaceDetector
+        FaceDetectorOptions = mp.tasks.vision.FaceDetectorOptions
+        VisionRunningMode = mp.tasks.vision.RunningMode
+
+        self.mp_options = FaceDetectorOptions(
+            base_options=BaseOptions(model_asset_path=str(model_path)),
+            running_mode=VisionRunningMode.IMAGE,
+            min_detection_confidence=0.5
+        )
+        self.mp_detector = FaceDetector.create_from_options(self.mp_options)
 
     # ==================== 接口 ====================
 
@@ -95,16 +117,16 @@ class FallDetector:
         Returns:
             SessionResult: 包含检测结果、处理后的帧
         """
-        # 检测单帧
+        # 1. 检测单帧
         frame_result = self._detect_single(frame)
 
-        # 人脸模糊
+        # 2. 追踪 + 计算 movement（先于人脸模糊，需要跟踪的人体框）
+        frame_result = self.session_manager.process(video_id, frame_result, frame)
+
+        # 3. 人脸模糊（使用跟踪后的人体框）
         processed_frame = frame.copy()
         if self.ENABLE_FACE_BLUR and frame_result.detected:
-            processed_frame = self._apply_face_blur(processed_frame)
-
-        # 追踪 + 计算 movement
-        frame_result = self.session_manager.process(video_id, frame_result, frame)
+            processed_frame = self._apply_face_blur(video_id, processed_frame, frame_result.persons)
 
         return SessionResult(
             video_id=video_id,
@@ -227,27 +249,114 @@ class FallDetector:
 
         return FrameResult(detected=True, persons=persons)
 
-    def _apply_face_blur(self, frame: np.ndarray) -> np.ndarray:
-        """使用 Haar Cascade 检测人脸并模糊"""
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray, 1.1, 4, minSize=(20, 20))
+    def _apply_face_blur(self, video_id: str, frame: np.ndarray,
+                          persons: List[PersonResult]) -> np.ndarray:
+        """
+        使用MediaPipe检测人脸并模糊，结合ByteTrack跟踪推断
 
+        Args:
+            video_id: 会话ID
+            frame: BGR图像
+            persons: 跟踪后的人员列表
+
+        Returns:
+            模糊后的帧
+        """
         h, w = frame.shape[:2]
 
-        for (x, y, fw, fh) in faces:
-            # 扩大模糊区域
-            expand = self.FACE_BLUR_EXPAND_RATIO
-            cx, cy = x + fw // 2, y + fh // 2
-            new_w = int(fw * (1 + expand))
-            new_h = int(fh * (1 + expand))
-            x1 = max(0, cx - new_w // 2)
-            y1 = max(0, cy - new_h // 2)
-            x2 = min(w, cx + new_w // 2)
-            y2 = min(h, cy + new_h // 2)
+        # MediaPipe检测人脸
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        mp_result = self.mp_detector.detect(mp_img)
 
-            if x2 - x1 > 5 and y2 - y1 > 5:
-                region = frame[y1:y2, x1:x2]
-                blurred = cv2.GaussianBlur(region, (self.FACE_BLUR_STRENGTH, self.FACE_BLUR_STRENGTH), 0)
-                frame[y1:y2, x1:x2] = blurred
+        # 收集检测到的人脸
+        detected_faces = []
+        if mp_result.detections:
+            for det in mp_result.detections:
+                bbox = det.bounding_box
+                x, y, fw, fh = int(bbox.origin_x), int(bbox.origin_y), int(bbox.width), int(bbox.height)
+                detected_faces.append([x, y, x + fw, y + fh])
+
+        # 为每个跟踪的人分配人脸
+        for person in persons:
+            body_box = person.box
+            person_id = person.person_id
+
+            # 尝试匹配检测到的人脸
+            matched_face = self._match_face_to_body(detected_faces, body_box, w, h)
+
+            if matched_face is not None:
+                # MediaPipe检测到人脸，记录相对位置
+                self.session_manager.update_face_position(video_id, person_id, body_box, matched_face)
+                self._blur_region(frame, matched_face, w, h)
+            else:
+                # 漏检，尝试用跟踪推断
+                inferred_face = self.session_manager.get_face_position(video_id, person_id, body_box)
+
+                if inferred_face is not None:
+                    self._blur_region(frame, inferred_face, w, h)
+                    self.session_manager.mark_face_lost(video_id, person_id)
+
+        return frame
+
+    def _match_face_to_body(self, faces: List[List[int]], body_box: List[float],
+                               frame_w: int, frame_h: int) -> Optional[List[float]]:
+        """
+        将检测到的人脸匹配到人体框
+
+        优先选择在人体框上半部分的人脸
+        """
+        if not faces:
+            return None
+
+        body_x1, body_y1, body_x2, body_y2 = body_box
+        body_cx = (body_x1 + body_x2) / 2
+        body_top_half_y = body_y1 + (body_y2 - body_y1) * 0.6  # 上60%区域
+
+        best_face = None
+        best_score = -1
+
+        for face in faces:
+            fx1, fy1, fx2, fy2 = face
+            face_cx = (fx1 + fx2) / 2
+            face_cy = (fy1 + fy2) / 2
+
+            # 人脸中心应在人体框内
+            if not (body_x1 <= face_cx <= body_x2 and body_y1 <= face_cy <= body_y2):
+                continue
+
+            # 人脸应在人体框上半部分
+            if face_cy > body_top_half_y:
+                continue
+
+            # 计算匹配分数（越靠近人体框中心越好）
+            score = 1 - abs(face_cx - body_cx) / (body_x2 - body_x1)
+            if score > best_score:
+                best_score = score
+                best_face = [fx1, fy1, fx2, fy2]
+
+        return best_face
+
+    def _blur_region(self, frame: np.ndarray, box: List[float],
+                        frame_w: int, frame_h: int):
+        """对指定区域进行模糊"""
+        # 扩大模糊区域
+        expand = self.FACE_BLUR_EXPAND_RATIO
+        x1, y1, x2, y2 = box
+        cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+        fw, fh = x2 - x1, y2 - y1
+
+        new_w = int(fw * (1 + expand))
+        new_h = int(fh * (1 + expand))
+
+        x1 = max(0, int(cx - new_w / 2))
+        y1 = max(0, int(cy - new_h / 2))
+        x2 = min(frame_w, int(cx + new_w / 2))
+        y2 = min(frame_h, int(cy + new_h / 2))
+
+        if x2 - x1 > 5 and y2 - y1 > 5:
+            region = frame[y1:y2, x1:x2]
+            blurred = cv2.GaussianBlur(region, (self.FACE_BLUR_STRENGTH, self.FACE_BLUR_STRENGTH), 0)
+            frame[y1:y2, x1:x2] = blurred
 
         return frame

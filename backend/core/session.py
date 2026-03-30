@@ -30,6 +30,13 @@ class SessionContext:
         # 记录每个人上一帧的位置，用于计算 movement
         self.last_positions: Dict[int, np.ndarray] = {}
 
+        # 人脸相对位置跟踪: {person_id: (rel_x, rel_y, rel_w, rel_h)}
+        self.face_ratios: Dict[int, tuple] = {}
+        # 人脸丢失计数: {person_id: lost_count}
+        self.face_lost_count: Dict[int, int] = {}
+        # 最大丢失帧数
+        self.face_max_lost = 30
+
 
 class SessionManager:
     """
@@ -92,8 +99,82 @@ class SessionManager:
         for pid in list(ctx.last_positions.keys()):
             if pid not in current_ids:
                 del ctx.last_positions[pid]
+                # 同时清理人脸跟踪数据
+                ctx.face_ratios.pop(pid, None)
+                ctx.face_lost_count.pop(pid, None)
 
         return FrameResult(detected=True, persons=tracked_persons)
+
+    def update_face_position(self, video_id: str, person_id: int,
+                              body_box: List[float], face_box: List[float]):
+        """
+        更新人脸相对位置
+
+        Args:
+            video_id: 会话ID
+            person_id: 人员ID
+            body_box: 人体框 [x1,y1,x2,y2]
+            face_box: 人脸框 [x1,y1,x2,y2]
+        """
+        ctx = self.sessions.get(video_id)
+        if ctx is None:
+            return
+
+        bw = body_box[2] - body_box[0]
+        bh = body_box[3] - body_box[1]
+
+        ctx.face_ratios[person_id] = (
+            (face_box[0] - body_box[0]) / bw,
+            (face_box[1] - body_box[1]) / bh,
+            (face_box[2] - face_box[0]) / bw,
+            (face_box[3] - face_box[1]) / bh,
+        )
+        ctx.face_lost_count[person_id] = 0
+
+    def get_face_position(self, video_id: str, person_id: int,
+                           body_box: List[float]) -> Optional[List[float]]:
+        """
+        获取人脸位置（检测到时返回实际位置，漏检时用跟踪推断）
+
+        Args:
+            video_id: 会话ID
+            person_id: 人员ID
+            body_box: 当前人体框 [x1,y1,x2,y2]
+
+        Returns:
+            人脸框 [x1,y1,x2,y2] 或 None
+        """
+        ctx = self.sessions.get(video_id)
+        if ctx is None:
+            return None
+
+        # 检查是否有记录的人脸比例
+        if person_id not in ctx.face_ratios:
+            return None
+
+        # 检查是否超过最大丢失帧数
+        if ctx.face_lost_count.get(person_id, 0) >= ctx.face_max_lost:
+            return None
+
+        # 用人体框 + 相对比例推断人脸位置
+        ratio = ctx.face_ratios[person_id]
+        bw = body_box[2] - body_box[0]
+        bh = body_box[3] - body_box[1]
+
+        face_box = [
+            body_box[0] + ratio[0] * bw,
+            body_box[1] + ratio[1] * bh,
+            body_box[0] + ratio[0] * bw + ratio[2] * bw,
+            body_box[1] + ratio[1] * bh + ratio[3] * bh,
+        ]
+
+        return face_box
+
+    def mark_face_lost(self, video_id: str, person_id: int):
+        """标记人脸丢失（漏检时调用）"""
+        ctx = self.sessions.get(video_id)
+        if ctx is not None and person_id in ctx.face_lost_count:
+            ctx.face_lost_count[person_id] += 1
 
     def _track(self, ctx: SessionContext, frame_result: FrameResult,
                frame: np.ndarray) -> List[PersonResult]:

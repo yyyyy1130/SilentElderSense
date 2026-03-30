@@ -152,6 +152,7 @@ async def process_video_ws(video_id: str):
 
                 # 检测
                 result = await detector.process_frame_async(session_id, resized)
+                processed = result.processed_frame  # 使用已模糊的帧
                 now = time.time()
 
                 # 风险判定
@@ -159,16 +160,16 @@ async def process_video_ws(video_id: str):
                     session_id, result.frame_result.persons, now
                 )
 
-                # 在帧上绘制风险框
+                # 在已模糊的帧上绘制风险框
                 for risk in risk_results:
                     x1, y1, x2, y2 = [int(x) for x in risk.box]
                     color = RISK_COLORS_BGR.get(risk.risk_level, (0, 255, 0))
-                    cv2.rectangle(resized, (x1, y1), (x2, y2), color, 2)
-                    cv2.putText(resized, risk.risk_level, (x1, y1 - 8),
+                    cv2.rectangle(processed, (x1, y1), (x2, y2), color, 2)
+                    cv2.putText(processed, risk.risk_level, (x1, y1 - 8),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
                 # 编码帧图像
-                _, buffer = cv2.imencode('.jpg', resized, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                _, buffer = cv2.imencode('.jpg', processed, [cv2.IMWRITE_JPEG_QUALITY, 80])
                 frame_hex = buffer.tobytes().hex()
 
                 frame_result = {
@@ -331,6 +332,7 @@ async def detect_ws(video_id: str):
         resized = cv2.resize(frame, (640, 480))
 
         result = await detector.process_frame_async(video_id, resized)
+        processed = result.processed_frame  # 使用已模糊的帧
         now = time.time()
         risk_results, event_changes = risk_engine.process(video_id, result.frame_result.persons, now)
 
@@ -359,16 +361,16 @@ async def detect_ws(video_id: str):
         # 每秒更新活跃事件的 end_time
         await update_active_events_end_time()
 
-        # 绘制检测框
+        # 在已模糊的帧上绘制检测框
         for risk in risk_results:
             x1, y1, x2, y2 = [int(x) for x in risk.box]
             color = RISK_COLORS_BGR.get(risk.risk_level, (0, 255, 0))
-            cv2.rectangle(resized, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(resized, risk.risk_level, (x1, y1 - 8),
+            cv2.rectangle(processed, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(processed, risk.risk_level, (x1, y1 - 8),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
         # 编码帧图像
-        _, buffer = cv2.imencode('.jpg', resized, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        _, buffer = cv2.imencode('.jpg', processed, [cv2.IMWRITE_JPEG_QUALITY, 80])
         frame_hex = buffer.tobytes().hex()
 
         processed_count += 1
@@ -543,7 +545,8 @@ async def update_detect_config():
         'fallen_confirm_frames', 'fallen_escalate_secs',
         'stillness_window_secs', 'stillness_movement_threshold',
         'stillness_escalate_secs', 'night_start_hour',
-        'night_end_hour', 'lost_grace_secs'
+        'night_end_hour', 'lost_grace_secs',
+        'face_detection_confidence', 'face_blur_strength', 'face_blur_expand_ratio'
     ]
     kwargs = {k: v for k, v in data.items() if k in valid_fields}
 

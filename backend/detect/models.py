@@ -31,6 +31,11 @@ class DetectionConfig(Base):
     # 人员追踪参数
     lost_grace_secs = Column(Float, default=1.0)            # 人员消失宽限期（秒）
 
+    # 人脸模糊参数
+    face_detection_confidence = Column(Float, default=0.5)  # 人脸检测置信度阈值
+    face_blur_strength = Column(Integer, default=51)        # 模糊核大小（奇数）
+    face_blur_expand_ratio = Column(Float, default=0.5)     # 模糊区域扩展比例
+
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -46,6 +51,9 @@ class DetectionConfig(Base):
             'night_start_hour': self.night_start_hour,
             'night_end_hour': self.night_end_hour,
             'lost_grace_secs': self.lost_grace_secs,
+            'face_detection_confidence': self.face_detection_confidence,
+            'face_blur_strength': self.face_blur_strength,
+            'face_blur_expand_ratio': self.face_blur_expand_ratio,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
@@ -61,5 +69,8 @@ class DetectionConfig(Base):
             'stillness_escalate_secs': 60.0,
             'night_start_hour': 22,
             'night_end_hour': 7,
-            'lost_grace_secs': 1.0
+            'lost_grace_secs': 1.0,
+            'face_detection_confidence': 0.5,
+            'face_blur_strength': 51,
+            'face_blur_expand_ratio': 0.5
         }

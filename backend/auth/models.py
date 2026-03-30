@@ -38,6 +38,26 @@ def init_db(app):
     SessionLocal = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
 
+    # 创建默认管理员账户
+    db = SessionLocal()
+    try:
+        admin = db.query(User).filter_by(username='admin').first()
+        if not admin:
+            admin = User(
+                username='admin',
+                email='admin@example.com',
+                is_admin=True
+            )
+            admin.set_password('123456')
+            db.add(admin)
+            db.commit()
+            print("已创建默认管理员: admin / 123456")
+    except Exception as e:
+        print(f"创建默认管理员失败: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
 
 def get_db():
     db = SessionLocal()
