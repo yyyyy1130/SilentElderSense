@@ -27,8 +27,8 @@
             <component :is="tab.icon" />
           </span>
           <span class="tab-label">{{ tab.label }}</span>
+          <span class="tab-indicator"></span>
         </button>
-        <div class="tab-indicator" :style="indicatorStyle"></div>
       </div>
     </div>
 
@@ -468,93 +468,6 @@
           </button>
         </div>
       </section>
-
-      <!-- 告警统计 -->
-      <section v-show="activeTab === 'stats'" class="content-section">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon total">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-value">{{ alertStats.total }}</span>
-              <span class="stat-label">总告警数</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon success">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                <polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-value">{{ alertStats.sent_count }}</span>
-              <span class="stat-label">已发送</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon danger">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="15" y1="9" x2="9" y2="15"/>
-                <line x1="9" y1="9" x2="15" y2="15"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-value">{{ alertStats.failed_count }}</span>
-              <span class="stat-label">发送失败</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon percent">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M16 8l-8 8"/>
-                <circle cx="9" cy="9" r="1" fill="currentColor"/>
-                <circle cx="15" cy="15" r="1" fill="currentColor"/>
-              </svg>
-            </div>
-            <div class="stat-content">
-              <span class="stat-value">{{ successRate }}%</span>
-              <span class="stat-label">成功率</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 图表区域 -->
-        <div class="charts-row">
-          <div class="chart-card">
-            <div class="card-header">
-              <h3>告警趋势</h3>
-            </div>
-            <div class="card-body">
-              <div class="chart-placeholder">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                </svg>
-                <p>近7天告警趋势图</p>
-              </div>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="card-header">
-              <h3>类型分布</h3>
-            </div>
-            <div class="card-body">
-              <div class="chart-placeholder">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-                  <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-                </svg>
-                <p>告警类型分布图</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
   </div>
 </template>
@@ -565,8 +478,7 @@ import {
   getAlertConfig,
   updateAlertConfig,
   acknowledgeAlert as ackAlert,
-  resendAlert as resendAlertApi,
-  getAlertStats
+  resendAlert as resendAlertApi
 } from '@/api/alerts'
 import {
   getDetectConfig,
@@ -594,28 +506,11 @@ const tabs = [
       h('path', { d: 'M1 12h6m6 0h10' }),
       h('path', { d: 'M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24' })
     ])
-  },
-  {
-    key: 'stats',
-    label: '告警统计',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('line', { x1: '18', y1: '20', x2: '18', y2: '10' }),
-      h('line', { x1: '12', y1: '20', x2: '12', y2: '4' }),
-      h('line', { x1: '6', y1: '20', x2: '6', y2: '14' })
-    ])
   }
 ]
 
 const activeTab = ref('alert')
 const saving = ref(false)
-
-// 指示器样式
-const indicatorStyle = computed(() => {
-  const index = tabs.findIndex(t => t.key === activeTab.value)
-  return {
-    transform: `translateX(${index * 100}%)`
-  }
-})
 
 // 告警配置
 const alertConfig = ref({
@@ -648,18 +543,6 @@ const detectConfig = ref({
   face_blur_expand_ratio: 0.5
 })
 const detectSaving = ref(false)
-
-// 告警统计
-const alertStats = ref({
-  total: 0,
-  sent_count: 0,
-  failed_count: 0
-})
-
-const successRate = computed(() => {
-  if (alertStats.value.total === 0) return 0
-  return ((alertStats.value.sent_count / alertStats.value.total) * 100).toFixed(1)
-})
 
 // 工具函数
 const getEventTypeLabel = (type) => {
@@ -815,20 +698,9 @@ const resendAlert = async (alertId) => {
   }
 }
 
-// 加载统计
-const loadStats = async () => {
-  try {
-    const stats = await getAlertStats({ days: 7 })
-    alertStats.value = stats
-  } catch (error) {
-    console.error('加载统计失败:', error)
-  }
-}
-
 onMounted(() => {
   loadConfig()
   loadDetectConfig()
-  loadStats()
 })
 </script>
 
@@ -949,13 +821,17 @@ onMounted(() => {
 .tab-indicator {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: calc(33.333% - 6px);
+  left: 8px;
+  right: 8px;
   height: 2px;
   background: linear-gradient(90deg, var(--primary-400), var(--primary-500));
   border-radius: 2px 2px 0 0;
-  transition: transform var(--transition-base);
-  margin-left: 8px;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.tab-btn.active .tab-indicator {
+  opacity: 1;
 }
 
 /* 内容区域 */

@@ -48,7 +48,8 @@ async def login():
             'access_token': token,
             'token_type': 'Bearer',
             'user_id': user.id,
-            'username': user.username
+            'username': user.username,
+            'role': 'admin' if user.is_admin else 'user'
         }), 200
     else:
         return jsonify({'error': '用户名或密码错误'}), 401

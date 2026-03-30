@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 同时检查 token 和 user 才认为已登录
   const isAuthenticated = computed(() => !!token.value && !!user.value)
-  const isAdmin = computed(() => user.value?.username === 'admin')
+  const isAdmin = computed(() => user.value?.role === 'admin')
 
   const login = async (credentials) => {
     try {
@@ -18,7 +18,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (response.user_id && response.username) {
         user.value = {
           id: response.user_id,
-          username: response.username
+          username: response.username,
+          role: response.role || 'user'
         }
 
         // 保存 token 到 localStorage

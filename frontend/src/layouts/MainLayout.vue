@@ -4,14 +4,14 @@
     <aside class="sidebar">
       <!-- Logo -->
       <div class="sidebar-header">
-        <div class="logo">
+        <div class="logo" @click="goToDashboard" title="返回事件看板">
           <div class="logo-icon">
             <svg viewBox="0 0 40 40" fill="none">
               <circle cx="20" cy="20" r="18" stroke="url(#sidebarLogoGrad)" stroke-width="2"/>
-              <circle cx="20" cy="20" r="5" fill="url(#sidebarLogoGrad)"/>
-              <path d="M20 7C13.373 7 8 12.373 8 19" stroke="url(#sidebarLogoGrad)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="20" cy="20" r="6" fill="url(#sidebarLogoGrad)"/>
+              <path d="M20 8C13.373 8 8 13.373 8 20" stroke="url(#sidebarLogoGrad)" stroke-width="2" stroke-linecap="round"/>
               <defs>
-                <linearGradient id="sidebarLogoGrad" x1="8" y1="7" x2="32" y2="33">
+                <linearGradient id="sidebarLogoGrad" x1="8" y1="8" x2="32" y2="32">
                   <stop stop-color="#fb923c"/>
                   <stop offset="1" stop-color="#f97316"/>
                 </linearGradient>
@@ -19,8 +19,8 @@
             </svg>
           </div>
           <div class="logo-text">
-            <span class="logo-title">SilentElder</span>
-            <span class="logo-subtitle">Sense</span>
+            <h1 class="system-name">SilentElder<span class="accent">Sense</span></h1>
+            <p class="system-desc">独居老人智能监护系统</p>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@
             </svg>
           </div>
           <div class="user-info">
-            <span class="user-name">{{ authStore.user?.name || '用户' }}</span>
+            <span class="user-name">{{ authStore.user?.username || '用户' }}</span>
             <span class="user-role">{{ getRoleName(authStore.user?.role) }}</span>
           </div>
         </div>
@@ -189,6 +189,7 @@ const updateTime = () => {
 const getRoleName = (role) => {
   const roleMap = {
     admin: '系统管理员',
+    user: '普通用户',
     family: '家属用户',
     monitor: '监护人'
   }
@@ -197,6 +198,10 @@ const getRoleName = (role) => {
 
 const showNotifications = () => {
   // TODO: 显示通知面板
+}
+
+const goToDashboard = () => {
+  router.push('/dashboard')
 }
 
 const handleLogout = () => {
@@ -270,11 +275,27 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+}
+
+.logo:hover {
+  opacity: 0.8;
 }
 
 .logo-icon {
   width: 40px;
   height: 40px;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .logo-icon svg {
@@ -287,22 +308,27 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-.logo-title {
+.system-name {
   font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--neutral-700);
+  color: var(--neutral-800);
   line-height: 1.2;
+  margin: 0;
 }
 
-.logo-subtitle {
-  font-family: var(--font-display);
-  font-size: 14px;
+.system-name .accent {
   font-weight: 300;
   background: linear-gradient(135deg, var(--primary-400) 0%, var(--primary-500) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.system-desc {
+  font-size: 11px;
+  color: var(--neutral-400);
+  margin: 2px 0 0 0;
 }
 
 /* 导航 */

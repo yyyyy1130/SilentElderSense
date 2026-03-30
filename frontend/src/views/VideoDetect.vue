@@ -1,78 +1,94 @@
 <template>
   <div class="video-detect">
-    <!-- 上传区域 -->
+    <!-- 上传 / 状态 合并区域 -->
     <el-card class="upload-card">
-      <el-upload
-        ref="uploadRef"
-        :auto-upload="false"
-        :show-file-list="false"
-        accept="video/*"
-        :on-change="handleVideoSelect"
-        :disabled="isProcessing"
-        drag
-      >
-        <el-icon class="upload-icon"><Upload /></el-icon>
-        <div class="el-upload__text">
-          将视频文件拖到此处，或<em>点击上传</em>
-        </div>
-        <template #tip>
-          <div class="el-upload__tip">支持 MP4、AVI、MOV、MKV 等常见格式</div>
-        </template>
-      </el-upload>
-    </el-card>
-
-    <!-- 处理状态 -->
-    <el-card v-if="selectedFile || isProcessing" class="status-card">
-      <div class="status-content">
-        <div class="file-info" v-if="selectedFile">
-          <el-icon><VideoCamera /></el-icon>
-          <span>{{ selectedFile.name }}</span>
-          <span class="file-size">{{ formatSize(selectedFile.size) }}</span>
-        </div>
-
-        <!-- 持久化开关 -->
-        <div class="persist-switch" v-if="selectedFile && !isProcessing && !isCompleted">
-          <el-switch v-model="enablePersist" />
-          <span class="switch-label">持久化模式（写入数据库）</span>
-        </div>
-
-        <el-button
-          v-if="selectedFile && !isProcessing && !isCompleted"
-          type="primary"
-          @click="startProcessing"
-          :loading="isUploading"
+      <!-- 未选择文件：显示拖拽上传 -->
+      <template v-if="!selectedFile && !isProcessing && !isCompleted">
+        <el-upload
+          ref="uploadRef"
+          :auto-upload="false"
+          :show-file-list="false"
+          accept="video/*"
+          :on-change="handleVideoSelect"
+          drag
         >
-          开始检测
-        </el-button>
+          <el-icon class="upload-icon"><Upload /></el-icon>
+          <div class="el-upload__text">
+            将视频文件拖到此处，或<em>点击上传</em>
+          </div>
+          <template #tip>
+            <div class="el-upload__tip">支持 MP4、AVI、MOV、MKV 等常见格式</div>
+          </template>
+        </el-upload>
+      </template>
 
-        <el-button
-          v-if="isProcessing"
-          type="danger"
-          @click="stopProcessing"
-        >
-          取消检测
-        </el-button>
+      <!-- 已选择文件：显示文件信息和操作 -->
+      <template v-else>
+        <div class="selected-file-area">
+          <!-- 文件信息行 -->
+          <div class="file-info-row">
+            <div class="file-info">
+              <el-icon class="file-icon"><VideoCamera /></el-icon>
+              <div class="file-detail">
+                <span class="file-name">{{ selectedFile?.name }}</span>
+                <span class="file-size">{{ formatSize(selectedFile?.size || 0) }}</span>
+              </div>
+            </div>
 
-        <el-button
-          v-if="isCompleted"
-          type="info"
-          @click="reset"
-        >
-          重新选择
-        </el-button>
-      </div>
+            <div class="file-actions">
+              <!-- 持久化开关 -->
+              <div class="persist-switch" v-if="!isProcessing && !isCompleted">
+                <el-switch v-model="enablePersist" />
+                <span class="switch-label">持久化</span>
+              </div>
 
-      <!-- 进度条 -->
-      <div v-if="isProcessing || isCompleted" class="progress-section">
-        <el-progress
-          :percentage="progress"
-          :stroke-width="16"
-          :color="progressColor"
-        />
-        <div class="progress-text">
-          {{ statusText }}
+              <el-button
+                v-if="!isProcessing && !isCompleted"
+                type="primary"
+                @click="startProcessing"
+                :loading="isUploading"
+              >
+                开始检测
+              </el-button>
+
+              <el-button
+                v-if="!isProcessing && !isCompleted"
+                @click="reset"
+              >
+                重新选择
+              </el-button>
+
+              <el-button
+                v-if="isProcessing"
+                type="danger"
+                @click="stopProcessing"
+              >
+                取消检测
+              </el-button>
+
+              <el-button
+                v-if="isCompleted"
+                type="info"
+                @click="reset"
+              >
+                重新选择
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 进度条 -->
+          <div v-if="isProcessing || isCompleted" class="progress-section">
+            <el-progress
+              :percentage="progress"
+              :stroke-width="16"
+              :color="progressColor"
+            />
+            <div class="progress-text">
+              {{ statusText }}
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
     </el-card>
 
     <!-- 帧展示区域 -->
@@ -92,7 +108,7 @@
           <p>等待帧数据...</p>
         </div>
 
-        <!-- 帧画布 - 始终存在，用 v-show 控制显示 -->
+        <!-- 帧画布 -->
         <canvas
           ref="canvasRef"
           class="frame-canvas"
@@ -354,40 +370,122 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-.upload-card {
+/* ========== 暗色卡片通用样式 ========== */
+.upload-card,
+.status-card,
+.frame-card {
   margin-bottom: 20px;
 }
 
+:deep(.el-card) {
+  background: rgba(26, 26, 36, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+:deep(.el-card__header) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+:deep(.el-card__body) {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ========== 上传区域暗色适配 ========== */
 .upload-icon {
   font-size: 48px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.3);
   margin-bottom: 16px;
+}
+
+:deep(.el-upload) {
+  width: 100%;
 }
 
 :deep(.el-upload-dragger) {
   padding: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg, 12px);
+  transition: all 0.3s ease;
 }
 
-.status-card {
-  margin-bottom: 20px;
+:deep(.el-upload-dragger:hover) {
+  border-color: var(--primary-500, #f97316);
+  background: rgba(249, 115, 22, 0.05);
 }
 
-.status-content {
+:deep(.el-upload-dragger .el-icon) {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+:deep(.el-upload__text) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.el-upload__text em) {
+  color: var(--primary-400, #fb923c);
+}
+
+:deep(.el-upload__tip) {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ========== 已选文件区域 ========== */
+.selected-file-area {
+  padding: 8px 0;
+}
+
+.file-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 16px;
 }
 
 .file-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  min-width: 0;
+}
+
+.file-icon {
+  font-size: 28px;
+  color: var(--primary-400, #fb923c);
+  flex-shrink: 0;
+}
+
+.file-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-size {
-  color: #909399;
+  color: rgba(255, 255, 255, 0.4);
   font-size: 12px;
+  margin-top: 2px;
+}
+
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .persist-switch {
@@ -398,7 +496,7 @@ onUnmounted(() => {
 
 .persist-switch .switch-label {
   font-size: 14px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .progress-section {
@@ -407,25 +505,22 @@ onUnmounted(() => {
 
 .progress-text {
   margin-top: 8px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
 }
 
-/* 帧展示 */
-.frame-card {
-  margin-bottom: 20px;
-}
-
+/* ========== 帧展示 ========== */
 .frame-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .frame-wrapper {
   position: relative;
   width: 100%;
-  background: #1a1a2e;
+  background: rgba(10, 10, 15, 0.6);
   border-radius: 8px;
   overflow: hidden;
   min-height: 360px;
@@ -437,7 +532,7 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   height: 360px;
-  color: #909399;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .placeholder-icon {
@@ -469,17 +564,17 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-/* 检测结果 */
+/* ========== 检测结果 ========== */
 .detection-result {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .detection-result h4 {
   margin: 0 0 10px 0;
   font-size: 14px;
-  color: #303133;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .person-tags {

@@ -591,6 +591,19 @@ const handleSubmit = async () => {
   color: var(--neutral-400);
 }
 
+.form-group :deep(.el-input__suffix) {
+  color: var(--neutral-400);
+}
+
+.form-group :deep(.el-input__password) {
+  color: var(--neutral-400);
+  cursor: pointer;
+}
+
+.form-group :deep(.el-input__password:hover) {
+  color: var(--neutral-500);
+}
+
 .form-group :deep(.el-form-item) {
   margin-bottom: 0;
 }
