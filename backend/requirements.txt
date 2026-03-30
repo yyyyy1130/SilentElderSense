@@ -2,14 +2,14 @@ quart
 sqlalchemy
 bcrypt
 pyjwt
-psutil  # 系统资源监控
+psutil
 
 # core 模块依赖
-onnxruntime-gpu  # GPU推理（无CUDA自动回退CPU）；纯CPU环境改为 onnxruntime
+onnxruntime-gpu 
 opencv-python
 numpy
 boxmot
-mediapipe  # 人脸检测（Tasks API）
+mediapipe
 
 # 测试依赖
 pytest
