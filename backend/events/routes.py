@@ -392,3 +392,60 @@ async def daily_trend():
     }
 
     return jsonify(result)
+
+
+@events_bp.route('/api/events/export', methods=['GET'])
+@token_required
+async def export_events():
+    """
+    导出事件数据为CSV
+
+    查询参数:
+        days: 导出天数（默认7）
+    """
+    import io
+    from quart import Response
+
+    user_id = request.current_user['user_id']
+    days = int(request.args.get('days', 7))
+    db = next(get_db())
+
+    now = datetime.now()
+    start_date = now - timedelta(days=days)
+
+    events = db.query(Event).filter(
+        Event.created_at >= start_date,
+        Event.user_id == user_id
+    ).order_by(Event.created_at.desc()).all()
+
+    # 类型/风险/状态映射
+    type_map = {'FALLEN': '跌倒检测', 'STILLNESS': '长时间静止', 'NIGHT_ABNORMAL': '夜间异常活动'}
+    risk_map = {'HIGH': '高风险', 'MEDIUM': '中风险', 'LOW': '低风险'}
+    status_map = {'pending': '待处理', 'confirmed': '已确认', 'false_alarm': '误报'}
+
+    # 构建CSV（UTF-8 with BOM，确保Excel正确识别中文）
+    output = io.StringIO()
+    output.write('ID,事件类型,风险等级,发生时间,持续时间(秒),状态,备注\n')
+
+    for e in events:
+        duration = e.duration if e.duration else 0
+        row = [
+            str(e.id),
+            type_map.get(e.event_type, e.event_type),
+            risk_map.get(e.risk_level, e.risk_level),
+            e.start_time.strftime('%Y-%m-%d %H:%M:%S') if e.start_time else '',
+            f'{duration:.1f}',
+            status_map.get(e.status, e.status),
+            e.notes or ''
+        ]
+        output.write(','.join(row) + '\n')
+
+    # UTF-8 BOM + CSV内容
+    csv_content = '\ufeff' + output.getvalue()
+    filename = f'events_{now.strftime("%Y%m%d_%H%M%S")}.csv'
+
+    return Response(
+        csv_content.encode('utf-8'),
+        mimetype='text/csv;charset=utf-8',
+        headers={'Content-Disposition': f'attachment; filename="{filename}"'}
+    )

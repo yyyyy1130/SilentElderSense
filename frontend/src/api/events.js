@@ -61,3 +61,13 @@ export function getDailyTrend(params) {
     params
   })
 }
+
+// 导出事件数据
+export function exportEvents(params) {
+  return request({
+    url: '/events/export',
+    method: 'get',
+    params,
+    responseType: 'blob'
+  })
+}

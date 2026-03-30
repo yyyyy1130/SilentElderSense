@@ -285,7 +285,7 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, h } from 'vue'
 import * as echarts from 'echarts'
-import { getEvents, getEventStats, getDailyTrend } from '@/api/events'
+import { getEvents, getEventStats, getDailyTrend, exportEvents } from '@/api/events'
 
 // 时间范围选项
 const timeRanges = [
@@ -755,9 +755,21 @@ const handlePageChange = (page) => {
   loadData()
 }
 
-const handleExport = () => {
-  // 导出功能
-  console.log('Export report')
+const handleExport = async () => {
+  try {
+    const days = getDaysByRange()
+    const response = await exportEvents({ days })
+    // 创建下载链接
+    const blob = new Blob([response], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    // 从响应头获取文件名，或使用默认名
+    link.download = `events_${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(link.href)
+  } catch (error) {
+    console.error('导出失败:', error)
+  }
 }
 
 onMounted(async () => {
