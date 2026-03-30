@@ -272,3 +272,122 @@ class AlertService:
             db.commit()
             return True
         return False
+
+    # ========== 告警发送接口（预留，暂未接入主流程） ==========
+
+    def send_sms(self, phone: str, message: str) -> dict:
+        """
+        发送短信告警
+
+        Args:
+            phone: 手机号
+            message: 短信内容
+
+        Returns:
+            {'success': bool, 'message_id': str, 'error': str}
+
+        接入步骤:
+            1. 安装 SDK: pip install aliyun-python-sdk-core aliyun-python-sdk-dysmsapi
+            2. 在 config.py 配置:
+               SMS_ACCESS_KEY_ID = 'xxx'
+               SMS_ACCESS_KEY_SECRET = 'xxx'
+               SMS_SIGN_NAME = '签名名称'
+               SMS_TEMPLATE_CODE = '模板CODE'
+            3. 取消下方代码注释并测试
+        """
+        # from aliyunsdkcore.client import AcsClient
+        # from aliyunsdkcore.acs_exception.exceptions import ServerException
+        # from aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
+        # from config import Config
+
+        # try:
+        #     client = AcsClient(Config.SMS_ACCESS_KEY_ID, Config.SMS_ACCESS_KEY_SECRET, 'cn-hangzhou')
+        #     request = SendSmsRequest.SendSmsRequest()
+        #     request.set_PhoneNumbers(phone)
+        #     request.set_SignName(Config.SMS_SIGN_NAME)
+        #     request.set_TemplateCode(Config.SMS_TEMPLATE_CODE)
+        #     request.set_TemplateParam(f'{{"content":"{message}"}}')
+        #     response = client.do_action_with_exception(request)
+        #     return {'success': True, 'message_id': response.get('BizId'), 'error': None}
+        # except ServerException as e:
+        #     return {'success': False, 'message_id': None, 'error': str(e)}
+
+        # 暂未接入，返回模拟结果
+        print(f"[SMS] 预留接口: 发送至 {phone}, 内容: {message[:50]}...")
+        return {'success': True, 'message_id': None, 'error': '接口未接入'}
+
+    def send_email(self, to_email: str, subject: str, body: str) -> dict:
+        """
+        发送邮件告警
+
+        Args:
+            to_email: 收件人邮箱
+            subject: 邮件主题
+            body: 邮件正文
+
+        Returns:
+            {'success': bool, 'message_id': str, 'error': str}
+
+        接入步骤:
+            1. 在 config.py 配置:
+               SMTP_SERVER = 'smtp.example.com'
+               SMTP_PORT = 465
+               SMTP_USERNAME = 'noreply@example.com'
+               SMTP_PASSWORD = 'password'
+               EMAIL_FROM = 'SilentElderSense <noreply@example.com>'
+            2. 取消下方代码注释并测试
+        """
+        # import smtplib
+        # from email.mime.text import MIMEText
+        # from email.mime.multipart import MIMEMultipart
+        # from config import Config
+
+        # try:
+        #     msg = MIMEMultipart()
+        #     msg['From'] = Config.EMAIL_FROM
+        #     msg['To'] = to_email
+        #     msg['Subject'] = subject
+        #     msg.attach(MIMEText(body, 'plain', 'utf-8'))
+
+        #     with smtplib.SMTP_SSL(Config.SMTP_SERVER, Config.SMTP_PORT) as server:
+        #         server.login(Config.SMTP_USERNAME, Config.SMTP_PASSWORD)
+        #         server.sendmail(Config.SMTP_USERNAME, to_email, msg.as_string())
+
+        #     return {'success': True, 'message_id': None, 'error': None}
+        # except Exception as e:
+        #     return {'success': False, 'message_id': None, 'error': str(e)}
+
+        # 暂未接入，返回模拟结果
+        print(f"[Email] 预留接口: 发送至 {to_email}, 主题: {subject}")
+        return {'success': True, 'message_id': None, 'error': '接口未接入'}
+
+    def send_app_push(self, user_id: int, title: str, message: str, data: dict = None) -> dict:
+        """
+        发送应用内推送
+
+        Args:
+            user_id: 用户ID
+            title: 推送标题
+            message: 推送内容
+            data: 附加数据（如事件ID、风险等级等）
+
+        Returns:
+            {'success': bool, 'error': str}
+
+        接入步骤:
+            1. 建立全局 WebSocket 连接管理器（如使用 redis pub/sub）
+            2. 在用户登录时注册连接，登出时移除
+            3. 调用此方法时通过 user_id 找到对应连接并发送消息
+
+        示例代码:
+            from websocket_manager import manager
+            await manager.send_to_user(user_id, {
+                'type': 'alert',
+                'title': title,
+                'message': message,
+                'data': data
+            })
+        """
+        # 暂未实现 WebSocket 推送管理器
+        print(f"[AppPush] 预留接口: 用户 {user_id}, 标题: {title}, 内容: {message[:50]}...")
+        return {'success': True, 'error': '接口未接入'}
