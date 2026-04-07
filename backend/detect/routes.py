@@ -41,7 +41,7 @@ def get_detector() -> FallDetector:
     """获取全局检测器实例"""
     global _detector
     if _detector is None:
-        _detector = FallDetector(model_path="core/models/fall_detection_v1.onnx")
+        _detector = FallDetector()
     return _detector
 
 
