@@ -46,7 +46,7 @@ class FallDetector:
     FACE_BLUR_EXPAND_RATIO = 0.5
 
     def __init__(self,
-                 model_path: str = "core/models/fall_detection_v1.onnx",
+                 model_path: str = "core/models/fall_detection_v5.onnx",
                  conf_threshold: float = 0.3,
                  tracker_fps: float = 25.0,
                  providers: list = None):
