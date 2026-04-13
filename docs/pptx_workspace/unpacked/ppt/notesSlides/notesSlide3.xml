@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="ascii"?>
+<p:notes xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+  <p:cSld>
+    <p:spTree>
+      <p:nvGrpSpPr>
+        <p:cNvPr id="1" name=""/>
+        <p:cNvGrpSpPr/>
+        <p:nvPr/>
+      </p:nvGrpSpPr>
+      <p:grpSpPr>
+        <a:xfrm>
+          <a:off x="0" y="0"/>
+          <a:ext cx="0" cy="0"/>
+          <a:chOff x="0" y="0"/>
+          <a:chExt cx="0" cy="0"/>
+        </a:xfrm>
+      </p:grpSpPr>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="2" name="Header Placeholder 1"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="hdr" sz="quarter"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="0"/>
+            <a:ext cx="3962400" cy="342900"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/>
+          <a:lstStyle>
+            <a:lvl1pPr algn="l">
+              <a:defRPr sz="1200"/>
+            </a:lvl1pPr>
+          </a:lstStyle>
+          <a:p>
+            <a:endParaRPr/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="3" name="Date Placeholder 2"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="dt" idx="1"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="5180013" y="0"/>
+            <a:ext cx="3962400" cy="342900"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0"/>
+          <a:lstStyle>
+            <a:lvl1pPr algn="r">
+              <a:defRPr sz="1200"/>
+            </a:lvl1pPr>
+          </a:lstStyle>
+          <a:p>
+            <a:r>
+              <a:rPr lang="cs-CZ"/>
+              <a:t>1.7.2013</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="4" name="Slide Image Placeholder 3"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1" noRot="1" noChangeAspect="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="sldImg" idx="2"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="2290763" y="512763"/>
+            <a:ext cx="4562475" cy="2566987"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:noFill/>
+          <a:ln w="12700">
+            <a:solidFill>
+              <a:prstClr val="black"/>
+            </a:solidFill>
+          </a:ln>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0" anchor="ctr"/>
+          <a:lstStyle/>
+          <a:p>
+            <a:endParaRPr/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="5" name="Notes Placeholder 4"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="body" sz="quarter" idx="3"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="914400" y="3251200"/>
+            <a:ext cx="7315200" cy="3081338"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0" anchor="ctr"/>
+          <a:lstStyle>
+            <a:lvl1pPr algn="l">
+              <a:defRPr sz="1400" b="0" i="0" u="none" strike="noStrike"/>
+            </a:lvl1pPr>
+          </a:lstStyle>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>&#39318;&#20808;&#65292;&#25105;&#20204;&#26469;&#30475;&#19968;&#19979;&#39033;&#30446;&#30340;&#32972;&#26223;&#12290;&#38543;&#30528;&#32769;&#40836;&#21270;&#31038;&#20250;&#30340;&#21040;&#26469;&#65292;&#29420;&#23621;&#32769;&#20154;&#30340;&#23433;&#20840;&#38382;&#39064;&#26085;&#30410;&#31361;&#20986;&#12290;&#25454;&#32479;&#35745;&#65292;&#25105;&#22269;60&#23681;&#20197;&#19978;&#32769;&#24180;&#20154;&#21475;&#24050;&#36798;2.8&#20159;&#65292;&#20854;&#20013;&#29420;&#23621;&#32769;&#20154;&#36229;&#36807;1.2&#20159;&#12290;&#36825;&#26159;&#19968;&#20010;&#38750;&#24120;&#24222;&#22823;&#30340;&#32676;&#20307;&#65292;&#20182;&#20204;&#38754;&#20020;&#30528;&#36300;&#20498;&#12289;&#31361;&#21457;&#30142;&#30149;&#31561;&#20005;&#23803;&#39118;&#38505;&#12290;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>&#28982;&#32780;&#65292;&#29616;&#26377;&#30340;&#30417;&#25252;&#26041;&#26696;&#23384;&#22312;&#35832;&#22810;&#30171;&#28857;&#65306;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>1. &#20256;&#32479;&#30340;&#20154;&#24037;&#30417;&#25252;&#20381;&#36182;&#25252;&#24037;&#24033;&#26597;&#65292;&#26080;&#27861;&#20570;&#21040;24&#23567;&#26102;&#19981;&#38388;&#26029;&#65292;&#19988;&#25104;&#26412;&#39640;&#26114;&#12290;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>2. &#26222;&#36890;&#35270;&#39057;&#30417;&#25511;&#34429;&#28982;&#33021;&#30475;&#65292;&#20294;&#20840;&#22825;&#20505;&#24405;&#20687;&#20005;&#37325;&#20405;&#29359;&#20102;&#32769;&#20154;&#30340;&#38544;&#31169;&#26435;&#65292;&#23548;&#33268;&#32769;&#20154;&#24515;&#29702;&#25269;&#35302;&#12290;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>3. &#26234;&#33021;&#31359;&#25140;&#35774;&#22791;&#38656;&#35201;&#32769;&#20154;&#20027;&#21160;&#37197;&#21512;&#65292;&#20381;&#20174;&#24615;&#24046;&#65292;&#19988;&#32493;&#33322;&#21644;&#35774;&#22791;&#31649;&#29702;&#20063;&#26159;&#38590;&#39064;&#12290;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>4. &#29616;&#26377;&#30340;&#19968;&#20123;AI&#30417;&#27979;&#31995;&#32479;&#65292;&#24448;&#24448;&#23384;&#22312;&#35823;&#25253;&#29575;&#39640;&#12289;&#21151;&#33021;&#21333;&#19968;&#30340;&#38382;&#39064;&#12290;</a:t>
+            </a:r>
+          </a:p>
+          <a:p>
+            <a:pPr indent="0" algn="l">
+              <a:lnSpc>
+                <a:spcPct val="100000"/>
+              </a:lnSpc>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="000000"/>
+                </a:solidFill>
+              </a:rPr>
+              <a:t>&#22240;&#27492;&#65292;&#25105;&#20204;&#36843;&#20999;&#38656;&#35201;&#19968;&#20010;&#33021;&#22815;&#20860;&#39038;&#23433;&#20840;&#19982;&#38544;&#31169;&#30340;&#26234;&#33021;&#30417;&#25252;&#24179;&#21488;&#65292;&#36825;&#27491;&#26159;&#25105;&#20204;&#39033;&#30446;&#30340;&#26680;&#24515;&#30446;&#26631;&#12290;</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="6" name="Footer Placeholder 5"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="ftr" sz="quarter" idx="4"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="6502400"/>
+            <a:ext cx="3962400" cy="341313"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0" anchor="b"/>
+          <a:lstStyle>
+            <a:lvl1pPr algn="l">
+              <a:defRPr sz="1200"/>
+            </a:lvl1pPr>
+          </a:lstStyle>
+          <a:p>
+            <a:endParaRPr/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="7" name="Slide Number Placeholder 6"/>
+          <p:cNvSpPr>
+            <a:spLocks noGrp="1"/>
+          </p:cNvSpPr>
+          <p:nvPr>
+            <p:ph type="sldNum" sz="quarter" idx="5"/>
+          </p:nvPr>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="5180013" y="6502400"/>
+            <a:ext cx="3962400" cy="341313"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" lIns="91440" tIns="45720" rIns="91440" bIns="45720" rtlCol="0" anchor="b"/>
+          <a:lstStyle>
+            <a:lvl1pPr algn="r">
+              <a:defRPr sz="1200"/>
+            </a:lvl1pPr>
+          </a:lstStyle>
+          <a:p>
+            <a:r>
+              <a:rPr lang="cs-CZ"/>
+              <a:t>&#8249;#&#8250;</a:t>
+            </a:r>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+    </p:spTree>
+  </p:cSld>
+  <p:clrMapOvr>
+    <a:masterClrMapping/>
+  </p:clrMapOvr>
+</p:notes>

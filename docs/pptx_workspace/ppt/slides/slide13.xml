@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="ascii"?>
+<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
+  <p:cSld>
+    <p:bg>
+      <p:bgPr>
+        <a:solidFill>
+          <a:srgbClr val="FFFFFF">
+            <a:alpha val="100000"/>
+          </a:srgbClr>
+        </a:solidFill>
+        <a:effectLst/>
+      </p:bgPr>
+    </p:bg>
+    <p:spTree>
+      <p:nvGrpSpPr>
+        <p:cNvPr id="1" name=""/>
+        <p:cNvGrpSpPr/>
+        <p:nvPr/>
+      </p:nvGrpSpPr>
+      <p:grpSpPr>
+        <a:xfrm>
+          <a:off x="0" y="0"/>
+          <a:ext cx="0" cy="0"/>
+          <a:chOff x="0" y="0"/>
+          <a:chExt cx="0" cy="0"/>
+        </a:xfrm>
+      </p:grpSpPr>
+      <p:pic>
+        <p:nvPicPr>
+          <p:cNvPr id="2" name="Picture 2"/>
+          <p:cNvPicPr>
+            <a:picLocks noChangeAspect="1"/>
+          </p:cNvPicPr>
+          <p:nvPr/>
+        </p:nvPicPr>
+        <p:blipFill>
+          <a:blip r:embed="rId3"/>
+          <a:srcRect/>
+          <a:stretch>
+            <a:fillRect/>
+          </a:stretch>
+        </p:blipFill>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="0"/>
+            <a:ext cx="12192000" cy="6858000"/>
+          </a:xfrm>
+          <a:prstGeom prst="roundRect">
+            <a:avLst>
+              <a:gd name="adj" fmla="val 0"/>
+            </a:avLst>
+          </a:prstGeom>
+          <a:noFill/>
+          <a:ln w="25400" cap="flat" cmpd="sng">
+            <a:noFill/>
+            <a:prstDash val="solid"/>
+            <a:round/>
+          </a:ln>
+        </p:spPr>
+      </p:pic>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="3" name="AutoShape 3"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="2286000"/>
+            <a:ext cx="12192000" cy="762000"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:noFill/>
+          <a:ln w="12700" cap="flat" cmpd="sng">
+            <a:noFill/>
+            <a:prstDash val="solid"/>
+            <a:round/>
+          </a:ln>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="ctr" anchorCtr="0"/>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr indent="0" algn="ctr">
+              <a:lnSpc>
+                <a:spcPct val="125000"/>
+              </a:lnSpc>
+              <a:defRPr/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="4000" b="1" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="333333"/>
+                </a:solidFill>
+                <a:latin typeface="Noto Sans SC"/>
+                <a:ea typeface="Noto Sans SC"/>
+                <a:cs typeface="Noto Sans SC"/>
+                <a:sym typeface="Noto Sans SC"/>
+              </a:rPr>
+              <a:t>&#24863;&#35874;&#32838;&#21548;</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="1100"/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="4" name="AutoShape 4"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="5715000" y="3175000"/>
+            <a:ext cx="762000" cy="50800"/>
+          </a:xfrm>
+          <a:prstGeom prst="roundRect">
+            <a:avLst>
+              <a:gd name="adj" fmla="val 0"/>
+            </a:avLst>
+          </a:prstGeom>
+          <a:solidFill>
+            <a:srgbClr val="10B981">
+              <a:alpha val="100000"/>
+            </a:srgbClr>
+          </a:solidFill>
+          <a:ln w="25400" cap="flat" cmpd="sng">
+            <a:noFill/>
+            <a:prstDash val="solid"/>
+            <a:round/>
+          </a:ln>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" wrap="square" lIns="63500" tIns="63500" rIns="63500" bIns="63500" rtlCol="0" anchor="ctr"/>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr algn="ctr">
+              <a:defRPr/>
+            </a:pPr>
+            <a:endParaRPr/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="5" name="AutoShape 5"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="3429000"/>
+            <a:ext cx="12192000" cy="508000"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:noFill/>
+          <a:ln w="12700" cap="flat" cmpd="sng">
+            <a:noFill/>
+            <a:prstDash val="solid"/>
+            <a:round/>
+          </a:ln>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="ctr" anchorCtr="0"/>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr indent="0" algn="ctr">
+              <a:lnSpc>
+                <a:spcPct val="125000"/>
+              </a:lnSpc>
+              <a:defRPr/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="2400" b="0" i="0" u="none" strike="noStrike" dirty="0">
+                <a:solidFill>
+                  <a:srgbClr val="666666"/>
+                </a:solidFill>
+                <a:latin typeface="Noto Sans SC"/>
+                <a:ea typeface="Noto Sans SC"/>
+                <a:cs typeface="Noto Sans SC"/>
+                <a:sym typeface="Noto Sans SC"/>
+              </a:rPr>
+              <a:t>Q &amp; A</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="1100" dirty="0"/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+      <p:sp>
+        <p:nvSpPr>
+          <p:cNvPr id="6" name="AutoShape 6"/>
+          <p:cNvSpPr/>
+          <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+          <a:xfrm>
+            <a:off x="0" y="4064000"/>
+            <a:ext cx="12192000" cy="381000"/>
+          </a:xfrm>
+          <a:prstGeom prst="rect">
+            <a:avLst/>
+          </a:prstGeom>
+          <a:noFill/>
+          <a:ln w="12700" cap="flat" cmpd="sng">
+            <a:noFill/>
+            <a:prstDash val="solid"/>
+            <a:round/>
+          </a:ln>
+        </p:spPr>
+        <p:txBody>
+          <a:bodyPr vert="horz" wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" rtlCol="0" anchor="ctr" anchorCtr="0"/>
+          <a:lstStyle/>
+          <a:p>
+            <a:pPr indent="0" algn="ctr">
+              <a:lnSpc>
+                <a:spcPct val="125000"/>
+              </a:lnSpc>
+              <a:defRPr/>
+            </a:pPr>
+            <a:r>
+              <a:rPr lang="en-US" sz="1400" b="0" i="0" u="none" strike="noStrike">
+                <a:solidFill>
+                  <a:srgbClr val="999999"/>
+                </a:solidFill>
+                <a:latin typeface="Noto Sans SC"/>
+                <a:ea typeface="Noto Sans SC"/>
+                <a:cs typeface="Noto Sans SC"/>
+                <a:sym typeface="Noto Sans SC"/>
+              </a:rPr>
+              <a:t>&#27426;&#36814;&#21508;&#20301;&#25552;&#38382;&#19982;&#20132;&#27969;</a:t>
+            </a:r>
+            <a:endParaRPr lang="en-US" sz="1100"/>
+          </a:p>
+        </p:txBody>
+      </p:sp>
+    </p:spTree>
+  </p:cSld>
+  <p:clrMapOvr>
+    <a:masterClrMapping/>
+  </p:clrMapOvr>
+</p:sld>

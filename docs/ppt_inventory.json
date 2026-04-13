@@ -1,0 +1,2550 @@
+{
+  "slide-0": {
+    "shape-0": {
+      "left": 0.56,
+      "top": 1.81,
+      "width": 12.22,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "面向独居老人的隐私保护型异常行为识别与应急响应系统",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 32.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 40.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.56,
+      "top": 2.64,
+      "width": 12.22,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "基于YOLO11深度学习与规则引擎融合的智能监护解决方案",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.11,
+      "top": 3.89,
+      "width": 11.11,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "计算机设计大赛人工智能实践赛参赛作品",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.11,
+      "top": 4.44,
+      "width": 11.11,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "指导老师：[公绪辉] | 2026年",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 20.0
+        }
+      ]
+    }
+  },
+  "slide-1": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 1.11,
+      "height": 0.56,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.17
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "目录",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.6,
+      "top": 1.88,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "01",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 2.08,
+      "top": 1.88,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "项目背景与痛点",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 7.71,
+      "top": 1.88,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "05",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 8.19,
+      "top": 1.88,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "隐私保护机制",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 1.6,
+      "top": 2.92,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "02",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 2.08,
+      "top": 2.92,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "系统概述",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 7.71,
+      "top": 2.92,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "06",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 8.19,
+      "top": 2.92,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "系统功能与创新优势",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 1.6,
+      "top": 3.96,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "03",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 2.08,
+      "top": 3.96,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "技术架构",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 7.71,
+      "top": 3.96,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "07",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-12": {
+      "left": 8.19,
+      "top": 3.96,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "检测效果",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-13": {
+      "left": 1.6,
+      "top": 5.0,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "04",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-14": {
+      "left": 2.08,
+      "top": 5.0,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "核心功能详解",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-15": {
+      "left": 7.71,
+      "top": 5.0,
+      "width": 0.42,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "08",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-16": {
+      "left": 8.19,
+      "top": 5.0,
+      "width": 3.89,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "总结与展望",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    }
+  },
+  "slide-2": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 4.4,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "项目背景与痛点",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.67,
+      "top": 1.81,
+      "width": 2.78,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "老龄化现状",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 4.93,
+      "top": 2.22,
+      "width": 3.33,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "依赖护工定期巡查，无法24小时不间断监护，人力成本高，突发异常难以及时发现。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 5.42,
+      "top": 1.74,
+      "width": 2.78,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "传统人工监护",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 8.96,
+      "top": 2.22,
+      "width": 3.33,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "全天候录像严重侵犯隐私权，数据管理有隐患，老人心理抵触，接受度低。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 9.44,
+      "top": 1.74,
+      "width": 2.78,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "普通视频监控",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 1.11,
+      "top": 2.36,
+      "width": 3.06,
+      "height": 2.22,
+      "paragraphs": [
+        {
+          "text": "我国60岁以上人口达2.8亿",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 15.17
+        },
+        {
+          "text": "其中独居老人超1.2亿",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 15.17
+        },
+        {
+          "text": "独居老人面临跌倒、突发疾病等风险，传统监护手段存在明显不足。",
+          "space_before": 10.0,
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 15.17
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 4.93,
+      "top": 4.17,
+      "width": 3.33,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "需要老人主动佩戴，依从性差；存在电池续航焦虑，设备易丢失或损坏。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 5.42,
+      "top": 3.68,
+      "width": 2.78,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "智能穿戴设备",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 8.96,
+      "top": 4.17,
+      "width": 3.33,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "误报率高影响体验，缺乏完善的隐私保护机制，功能单一，不成体系。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 9.44,
+      "top": 3.68,
+      "width": 2.78,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "现有AI监测系统",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 1.81,
+      "top": 5.76,
+      "width": 9.72,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "核心需求：开发一款能够24小时不间断监测独居老人异常行为，同时通过隐私保护技术解决隐私泄露问题，具备完整系统化功能的智能监护平台。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    }
+  },
+  "slide-3": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 2.19,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "系统概述",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.04,
+      "top": 2.22,
+      "width": 5.69,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "面向独居老人的隐私保护型异常行为识别与应急响应平台，融合深度学习与规则引擎，实现全天候智能监护。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.46,
+      "top": 1.83,
+      "width": 5.56,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "系统定位",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.04,
+      "top": 3.54,
+      "width": 5.69,
+      "height": 0.83,
+      "warnings": [
+        "manual_bullet_symbol: use proper bullet formatting"
+      ],
+      "paragraphs": [
+        {
+          "text": "● 异常识别：跌倒、长时间静止、夜间异常检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 15.17
+        },
+        {
+          "text": "● 风险分级：Normal / Low / Medium / High 四级预警",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 15.17
+        },
+        {
+          "text": "● 隐私保护：人脸模糊、数据最小化、本地化处理",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 15.17
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.46,
+      "top": 3.15,
+      "width": 5.56,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "核心功能",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 1.46,
+      "top": 4.82,
+      "width": 5.56,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "功能模块",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 7.78,
+      "top": 4.51,
+      "width": 4.17,
+      "height": 0.28,
+      "paragraphs": [
+        {
+          "text": "系统异常事件监控看板界面",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 12.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "757575",
+          "line_spacing": 15.0
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 1.04,
+      "top": 5.21,
+      "width": 5.69,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "包含实时监控、视频检测、事件看板、统计分析、可视化大屏及系统设置六大模块，构建完整闭环。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 8.47,
+      "top": 5.14,
+      "width": 3.19,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "实时响应",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 20.0
+        },
+        {
+          "text": "毫秒级异常检测与预警推送",
+          "font_name": "Noto Sans SC",
+          "font_size": 12.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 15.0
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 1.04,
+      "top": 6.53,
+      "width": 5.69,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "非接触式监测，无感守护；隐私保护，安全可靠；智能识别，精准告警。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 1.46,
+      "top": 6.14,
+      "width": 5.56,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "系统特点",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 8.47,
+      "top": 6.11,
+      "width": 3.19,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "隐私安全",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 20.0
+        },
+        {
+          "text": "本地数据处理，拒绝云端泄露",
+          "font_name": "Noto Sans SC",
+          "font_size": 12.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 15.0
+        }
+      ]
+    }
+  },
+  "slide-4": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 2.2,
+      "height": 0.64,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.09
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "技术架构",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.67,
+      "top": 1.69,
+      "width": 4.17,
+      "height": 0.39,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "后端技术栈",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.67,
+      "top": 2.11,
+      "width": 4.72,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "Python 3.13, Quart (异步框架), SQLAlchemy (ORM), SQLite, ONNX Runtime",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.67,
+      "top": 3.29,
+      "width": 4.17,
+      "height": 0.39,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "前端技术栈",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.67,
+      "top": 3.71,
+      "width": 4.72,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "Vue 3, Vite, Element Plus (UI), ECharts (可视化), Pinia (状态管理)",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 1.67,
+      "top": 4.89,
+      "width": 4.17,
+      "height": 0.39,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "AI 核心模型",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 7.36,
+      "top": 4.72,
+      "width": 5.0,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "系统分层架构与数据流向\u000b从采集层到应用服务层的全链路数据流转",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 1.67,
+      "top": 5.31,
+      "width": 4.72,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "YOLO11 (目标检测), MediaPipe (人脸), ByteTrack (追踪), OpenCV",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 0.83,
+      "top": 6.67,
+      "width": 11.67,
+      "height": 0.33,
+      "paragraphs": [
+        {
+          "text": "Tech Stack & Architecture Overview",
+          "alignment": "RIGHT",
+          "font_name": "Noto Sans SC",
+          "font_size": 12.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "969696",
+          "line_spacing": 15.0
+        }
+      ]
+    }
+  },
+  "slide-5": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 4.44,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "核心功能-跌倒检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.11,
+      "top": 2.15,
+      "width": 4.72,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "采用YOLO11 ONNX轻量级模型，输出6维特征，支持GPU/CPU双模式推理，兼顾速度与精度。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 16.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.67,
+      "top": 1.69,
+      "width": 4.44,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "技术方案",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 7.08,
+      "top": 1.67,
+      "width": 5.28,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "判定逻辑流程",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.11,
+      "top": 3.89,
+      "width": 4.72,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "连续帧确认机制大幅降低误报；支持多人同时检测，通过ByteTrack算法保持目标身份一致性。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 16.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 1.67,
+      "top": 3.43,
+      "width": 4.44,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "技术特点",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 1.11,
+      "top": 5.62,
+      "width": 4.72,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "MEDIUM：已确认跌倒，但未持续满1秒。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 16.0
+        },
+        {
+          "text": "HIGH：跌倒状态持续≥1秒，需立即响应。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 16.0
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 1.67,
+      "top": 5.17,
+      "width": 4.44,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "风险等级定义",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 7.57,
+      "top": 5.14,
+      "width": 4.72,
+      "height": 1.11,
+      "paragraphs": [
+        {
+          "text": "核心逻辑：",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 17.33
+        },
+        {
+          "text": "通过连续5帧确认跌倒状态，避免因物体遮挡或短暂姿态异常导致的误报；时间阈值确保只有真实危险才会触发高级别告警。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 17.33
+        }
+      ]
+    }
+  },
+  "slide-6": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 6.67,
+      "height": 0.64,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.09
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "核心功能-长时间静止检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.67,
+      "top": 1.94,
+      "width": 2.5,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "技术方案",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 5.69,
+      "top": 1.94,
+      "width": 2.5,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "判定流程",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 9.72,
+      "top": 1.94,
+      "width": 2.5,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "应用场景",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.11,
+      "top": 2.64,
+      "width": 3.06,
+      "height": 2.5,
+      "paragraphs": [
+        {
+          "text": "采用滑动窗口（30秒）结合位移阈值（5像素）的智能判定算法，精准识别微小位移变化。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 21.0
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 5.14,
+      "top": 2.64,
+      "width": 3.06,
+      "height": 2.5,
+      "paragraphs": [
+        {
+          "text": "1. 实时采集视频帧",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        },
+        {
+          "text": "2. 计算目标位移矢量",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        },
+        {
+          "text": "3. 数据加入滑动窗口",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        },
+        {
+          "text": "4. 窗口内综合判定",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 9.17,
+      "top": 2.64,
+      "width": 3.06,
+      "height": 2.5,
+      "warnings": [
+        "manual_bullet_symbol: use proper bullet formatting"
+      ],
+      "paragraphs": [
+        {
+          "text": "● 正常静止",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "休息/阅读，低风险，仅记录日志。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "646464",
+          "line_spacing": 17.33
+        },
+        {
+          "text": "● 异常静止",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "F57C00",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "跌倒/突发疾病，中风险，立即触发告警。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "646464",
+          "line_spacing": 17.33
+        }
+      ]
+    }
+  },
+  "slide-7": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 6.61,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "核心功能-夜间异常检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.67,
+      "top": 1.74,
+      "width": 1.67,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "技术方案",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 1.67,
+      "top": 2.15,
+      "width": 9.72,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "组合判定逻辑：夜间时段（22:00-07:00） + 长时间静止 = 夜间异常",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.67,
+      "top": 3.19,
+      "width": 1.67,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "应用场景",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.67,
+      "top": 3.61,
+      "width": 9.72,
+      "height": 1.11,
+      "paragraphs": [
+        {
+          "text": "夜间起床：正常活动，不触发告警。",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 22.5
+        },
+        {
+          "text": "夜间静止：在客厅等非卧室区域长时间静止，触发中风险告警。",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 22.5
+        },
+        {
+          "text": "正常睡觉：在卧室睡觉，摄像头未覆盖，不监测。",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 1.67,
+      "top": 5.21,
+      "width": 1.67,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "设计理念",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 1.67,
+      "top": 5.62,
+      "width": 9.72,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "关注“不合理的时间出现在不合理的地方”，为独居老人提供额外的夜间安全保障。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 22.5
+        }
+      ]
+    }
+  },
+  "slide-8": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 3.31,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "隐私保护机制",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.46,
+      "top": 1.69,
+      "width": 2.78,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "隐私挑战",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 5.0,
+      "top": 1.53,
+      "width": 7.5,
+      "height": 0.42,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "解决方案：三大核心策略",
+          "font_name": "Noto Sans SC",
+          "font_size": 22.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 27.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.04,
+      "top": 2.15,
+      "width": 3.19,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "传统监控存在全天候录像、数据存储隐患及内容易被滥用等风险，亟待技术升级。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 6.04,
+      "top": 2.22,
+      "width": 6.11,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "人脸模糊技术",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 6.04,
+      "top": 2.64,
+      "width": 6.11,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "利用 MediaPipe 实时检测人脸，通过高强度高斯模糊（51px）处理，从源头保护身份隐私。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 1.04,
+      "top": 3.96,
+      "width": 3.19,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "通过技术手段实现法律合规，显著提升用户接受度，构建全方位的数据安全体系。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 1.46,
+      "top": 3.5,
+      "width": 2.78,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "核心优势",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 6.04,
+      "top": 3.61,
+      "width": 6.11,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "数据最小化原则",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 6.04,
+      "top": 4.03,
+      "width": 6.11,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "仅保存事件摘要、检测参数和配置，严禁存储原始视频流和未模糊帧，减少攻击面。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 6.04,
+      "top": 5.0,
+      "width": 6.11,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "本地化处理机制",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-11": {
+      "left": 6.04,
+      "top": 5.42,
+      "width": 6.11,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "视频数据在本地服务器闭环处理，仅传输脱敏后的模糊帧，极大降低网络传输泄露风险。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 14.0
+        }
+      ]
+    }
+  },
+  "slide-9": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 7.15,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "系统功能、创新点与技术优势",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.11,
+      "top": 2.43,
+      "width": 3.06,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "6大核心功能",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 5.14,
+      "top": 2.43,
+      "width": 3.06,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "3大创新点",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 9.17,
+      "top": 2.43,
+      "width": 3.06,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "5大技术优势",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "4CAF50",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.11,
+      "top": 3.06,
+      "width": 3.06,
+      "height": 2.5,
+      "paragraphs": [
+        {
+          "text": "实时监控与视频检测",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "智能事件看板展示",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "多维度统计分析",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "数据可视化大屏",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "灵活的系统设置",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 5.14,
+      "top": 3.06,
+      "width": 3.06,
+      "height": 2.5,
+      "paragraphs": [
+        {
+          "text": "隐私优先的非接触监测",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "规则与机器学习融合判定",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "完整系统化支持实际部署",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 9.17,
+      "top": 3.06,
+      "width": 3.06,
+      "height": 2.5,
+      "paragraphs": [
+        {
+          "text": "轻量高效，低资源占用",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "智能双模式检测机制",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "检测参数灵活可配置",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "多重策略抑制误报",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        },
+        {
+          "text": "毫秒级实时响应速度",
+          "bullet": true,
+          "level": 0,
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 19.5
+        }
+      ]
+    }
+  },
+  "slide-10": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 9.9,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "检测效果-可视化大屏与检测效果",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.81,
+      "top": 1.94,
+      "width": 4.31,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "可视化大屏",
+          "font_name": "Noto Sans SC",
+          "font_size": 20.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 25.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 7.78,
+      "top": 1.83,
+      "width": 4.44,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "跌倒检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 7.78,
+      "top": 2.22,
+      "width": 4.44,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "实时识别并根据持续时间升级风险，确保及时响应",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 17.5
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 1.11,
+      "top": 2.5,
+      "width": 4.72,
+      "height": 0.97,
+      "paragraphs": [
+        {
+          "text": "提供事件看板、统计图表和趋势分析，支持大屏自适应和实时数据更新，便于宏观监控。",
+          "font_name": "Noto Sans SC",
+          "font_size": 16.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 17.33
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.78,
+      "top": 3.22,
+      "width": 4.44,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "长时间静止检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 7.78,
+      "top": 3.61,
+      "width": 4.44,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "智能区分正常休息与异常静止状态，减少误报。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 17.5
+        }
+      ]
+    },
+    "shape-7": {
+      "left": 7.78,
+      "top": 4.61,
+      "width": 4.44,
+      "height": 0.33,
+      "paragraphs": [
+        {
+          "text": "灵活交互控制",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "color": "333333"
+        }
+      ]
+    },
+    "shape-8": {
+      "left": 7.78,
+      "top": 5.0,
+      "width": 4.44,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "点击事件可查看详情溯源，支持告警通知一键查看与处理。",
+          "font_name": "Noto Sans SC",
+          "color": "555555",
+          "line_spacing": 15.0
+        }
+      ]
+    },
+    "shape-9": {
+      "left": 7.78,
+      "top": 6.0,
+      "width": 4.44,
+      "height": 0.33,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.08
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "夜间异常检测",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-10": {
+      "left": 7.78,
+      "top": 6.39,
+      "width": 4.44,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "精准识别夜间不合理时段的异常静止行为，保障夜间安全。",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 17.5
+        }
+      ]
+    }
+  },
+  "slide-11": {
+    "shape-0": {
+      "left": 0.83,
+      "top": 0.56,
+      "width": 2.75,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "总结与展望",
+          "font_name": "Noto Sans SC",
+          "font_size": 36.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 45.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 1.67,
+      "top": 2.08,
+      "width": 3.33,
+      "height": 0.42,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "项目总结",
+          "font_name": "Noto Sans SC",
+          "font_size": 22.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 27.5
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 7.22,
+      "top": 2.08,
+      "width": 3.33,
+      "height": 0.42,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.07
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "未来展望",
+          "font_name": "Noto Sans SC",
+          "font_size": 22.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 27.5
+        }
+      ]
+    },
+    "shape-3": {
+      "left": 1.11,
+      "top": 2.64,
+      "width": 4.72,
+      "height": 2.08,
+      "paragraphs": [
+        {
+          "text": "成功构建了完整的智能监护系统，实现了三大核心功能和四级风险分级，在技术和应用上都取得了突破。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "555555",
+          "line_spacing": 21.0
+        }
+      ]
+    },
+    "shape-4": {
+      "left": 7.08,
+      "top": 2.72,
+      "width": 4.44,
+      "height": 0.36,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "短期改进：完善功能、对接第三方通知。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-5": {
+      "left": 7.08,
+      "top": 3.28,
+      "width": 4.44,
+      "height": 0.36,
+      "overflow": {
+        "frame": {
+          "overflow_bottom": 0.06
+        }
+      },
+      "paragraphs": [
+        {
+          "text": "中期规划：扩展异常行为类型、优化AI模型。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 22.5
+        }
+      ]
+    },
+    "shape-6": {
+      "left": 7.08,
+      "top": 3.83,
+      "width": 4.44,
+      "height": 0.69,
+      "paragraphs": [
+        {
+          "text": "长期愿景：构建AI监护生态系统、实现远程医疗服务、推动行业标准制定。",
+          "font_name": "Noto Sans SC",
+          "font_size": 18.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 18.0
+        }
+      ]
+    }
+  },
+  "slide-12": {
+    "shape-0": {
+      "left": 0.0,
+      "top": 2.5,
+      "width": 13.33,
+      "height": 0.83,
+      "paragraphs": [
+        {
+          "text": "感谢聆听",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 40.0,
+          "bold": true,
+          "italic": false,
+          "underline": false,
+          "color": "333333",
+          "line_spacing": 50.0
+        }
+      ]
+    },
+    "shape-1": {
+      "left": 0.0,
+      "top": 3.75,
+      "width": 13.33,
+      "height": 0.56,
+      "paragraphs": [
+        {
+          "text": "Q & A",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 24.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "666666",
+          "line_spacing": 30.0
+        }
+      ]
+    },
+    "shape-2": {
+      "left": 0.0,
+      "top": 4.44,
+      "width": 13.33,
+      "height": 0.42,
+      "paragraphs": [
+        {
+          "text": "欢迎各位提问与交流",
+          "alignment": "CENTER",
+          "font_name": "Noto Sans SC",
+          "font_size": 14.0,
+          "bold": false,
+          "italic": false,
+          "underline": false,
+          "color": "999999",
+          "line_spacing": 17.5
+        }
+      ]
+    }
+  }
+}
