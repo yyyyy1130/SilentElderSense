@@ -28,6 +28,10 @@ class Event(Base):
     snapshot_path = Column(String(256), nullable=True)  # 快照图片路径
     notes = Column(Text, nullable=True)  # 备注
 
+    # TEE 可信追溯
+    core_hash = Column(String(64), nullable=True)    # 生成此事件的核心代码哈希
+    model_version = Column(String(32), nullable=True)  # 生成此事件的模型版本
+
     # 状态
     status = Column(String(16), default='pending')  # pending, confirmed, false_alarm
     handled_at = Column(DateTime, nullable=True)  # 处理时间
@@ -56,6 +60,8 @@ class Event(Base):
             'duration': self.duration,
             'frame_count': self.frame_count,
             'snapshot_path': self.snapshot_path,
+            'core_hash': self.core_hash,
+            'model_version': self.model_version,
             'status': self.status,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

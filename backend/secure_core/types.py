@@ -30,3 +30,16 @@ class SessionResult:
     video_id: str
     frame_result: FrameResult
     processed_frame: Optional[np.ndarray] = None  # 人脸模糊后的帧
+
+
+@dataclass
+class SecureFrameResult:
+    """secure_core 对外输出的单帧处理结果
+
+    TEE 边界外的模块只接收此结构，不接触原始帧或内部追踪数据。
+    """
+    processed_frame: Optional[np.ndarray]  # 人脸模糊后的帧（可展示）
+    risk_results: List                     # PersonRisk 列表
+    event_changes: List                    # EventChange 列表
+    core_hash: str = ""
+    model_version: str = ""

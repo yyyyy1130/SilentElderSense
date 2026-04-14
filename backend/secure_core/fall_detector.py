@@ -45,8 +45,11 @@ class FallDetector:
     FACE_BLUR_STRENGTH = 51
     FACE_BLUR_EXPAND_RATIO = 0.5
 
+    # 模型文件路径（相对于 secure_core/ 目录）
+    _PKG_ROOT = Path(__file__).parent
+
     def __init__(self,
-                 model_path: str = "core/models/fall_detection_v5.onnx",
+                 model_path: str = None,
                  conf_threshold: float = 0.3,
                  tracker_fps: float = 25.0,
                  providers: list = None):
@@ -54,11 +57,13 @@ class FallDetector:
         初始化检测器
 
         Args:
-            model_path: ONNX模型路径
+            model_path: ONNX模型路径（默认 secure_core/models/fall_detection_v5.onnx）
             conf_threshold: 检测置信度阈值
             tracker_fps: 追踪器预期帧率
             providers: ONNX Runtime providers
         """
+        if model_path is None:
+            model_path = str(self._PKG_ROOT / "models" / "fall_detection_v5.onnx")
         self.model_path = model_path
         self.conf_threshold = conf_threshold
 
@@ -80,7 +85,7 @@ class FallDetector:
 
     def _init_mediapipe(self):
         """初始化MediaPipe人脸检测"""
-        model_path = Path(__file__).parent / "models" / "blaze_face_full_range.tflite"
+        model_path = self._PKG_ROOT / "models" / "blaze_face_full_range.tflite"
         if not model_path.exists():
             raise FileNotFoundError(
                 f"MediaPipe模型不存在: {model_path}\n"
@@ -238,7 +243,7 @@ class FallDetector:
         is_live = False
         if video_id:
             try:
-                from detect.risk_engine import risk_engine
+                from .risk_engine import risk_engine
                 session = risk_engine._sessions.get(video_id)
                 if session and session.is_live:
                     is_live = True

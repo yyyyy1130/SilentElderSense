@@ -1,7 +1,7 @@
 """
 风险判定引擎
 
-基于 core 返回的逐帧检测数据，在后端判定事件类型和风险等级。
+基于 core 返回的逐帧检测数据，在可信核心内判定事件类型和风险等级。
 不依赖 core 内部逻辑，仅消费 PersonResult 数据。
 
 风险规则：
@@ -21,7 +21,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-from core.types import PersonResult
+from .types import PersonResult
 
 
 # ==================== 日志配置 ====================
@@ -172,7 +172,7 @@ class RiskEngine:
     def _load_user_config(self, user_id: int) -> Dict:
         """从数据库加载用户配置"""
         try:
-            from .service import get_detection_config_service
+            from detect.service import get_detection_config_service
             service = get_detection_config_service()
             return service.get_runtime_config(user_id)
         except Exception as e:
@@ -454,5 +454,5 @@ class RiskEngine:
         return hour >= config['NIGHT_START_HOUR'] or hour < config['NIGHT_END_HOUR']
 
 
-# 全局单例
+# 全局单例（由 SecureCore 使用）
 risk_engine = RiskEngine()

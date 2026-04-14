@@ -38,6 +38,9 @@ def init_db(app):
     SessionLocal = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
 
+    # SQLite 迁移：为已有 events 表添加新列
+    _migrate_events_table(engine)
+
     # 创建默认管理员账户
     db = SessionLocal()
     try:
@@ -65,3 +68,21 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def _migrate_events_table(engine):
+    """为 events 表添加 TEE 相关字段（安全忽略已存在的列）"""
+    from sqlalchemy import inspect, text
+    insp = inspect(engine)
+    if 'events' not in insp.get_table_names():
+        return
+    existing = {col['name'] for col in insp.get_columns('events')}
+    new_columns = [
+        ('core_hash', 'VARCHAR(64)'),
+        ('model_version', 'VARCHAR(32)'),
+    ]
+    with engine.connect() as conn:
+        for col_name, col_type in new_columns:
+            if col_name not in existing:
+                conn.execute(text(f'ALTER TABLE events ADD COLUMN {col_name} {col_type}'))
+        conn.commit()
