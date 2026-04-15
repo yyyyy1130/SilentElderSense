@@ -80,6 +80,8 @@ def _migrate_events_table(engine):
     new_columns = [
         ('core_hash', 'VARCHAR(64)'),
         ('model_version', 'VARCHAR(32)'),
+        ('anon_person_id', 'VARCHAR(16)'),
+        ('feature_summary', 'TEXT'),
     ]
     with engine.connect() as conn:
         for col_name, col_type in new_columns:

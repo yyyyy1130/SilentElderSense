@@ -1,6 +1,7 @@
 """
 事件数据模型
 """
+import json
 from sqlalchemy import Column, Integer, String, DateTime, Text
 from datetime import datetime
 from auth.models import Base
@@ -28,6 +29,10 @@ class Event(Base):
     snapshot_path = Column(String(256), nullable=True)  # 快照图片路径
     notes = Column(Text, nullable=True)  # 备注
 
+    # TEE 隐私增强
+    anon_person_id = Column(String(16), nullable=True)   # 匿名化人员ID（如 "p03"）
+    feature_summary = Column(Text, nullable=True)         # 特征摘要 JSON
+
     # TEE 可信追溯
     core_hash = Column(String(64), nullable=True)    # 生成此事件的核心代码哈希
     model_version = Column(String(32), nullable=True)  # 生成此事件的模型版本
@@ -53,6 +58,7 @@ class Event(Base):
             'user_id': self.user_id,
             'video_id': self.video_id,
             'person_id': self.person_id,
+            'anon_person_id': self.anon_person_id,
             'event_type': self.event_type,
             'risk_level': self.risk_level,
             'start_time': self.start_time.isoformat() if self.start_time else None,
@@ -60,6 +66,7 @@ class Event(Base):
             'duration': self.duration,
             'frame_count': self.frame_count,
             'snapshot_path': self.snapshot_path,
+            'feature_summary': json.loads(self.feature_summary) if self.feature_summary else None,
             'core_hash': self.core_hash,
             'model_version': self.model_version,
             'status': self.status,

@@ -63,6 +63,15 @@ class EventBuilder:
             for ch in event_changes
         ]
 
+    @staticmethod
+    def anonymize_id(raw_id: int) -> str:
+        """
+        将原始追踪 ID 映射为匿名 ID（无状态，确定性）
+
+        例如: ByteTrack ID 3 → "p03"
+        """
+        return f"p{raw_id:02d}"
+
     def _anonymize_person_id(self, session_id: str, raw_id: int) -> str:
         """
         将原始追踪 ID 映射为匿名 ID

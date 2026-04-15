@@ -114,6 +114,7 @@ class EventChange:
     start_ts: float
     end_ts: Optional[float] = None
     frame_count: int = 0
+    feature_summary: Optional[dict] = None
 
 
 @dataclass
@@ -342,6 +343,9 @@ class RiskEngine:
                     risk_level=risk_level,
                     start_ts=now,
                     frame_count=1,
+                    feature_summary=self._build_feature_summary(
+                        event_type, person, state, config, now
+                    ),
                 ))
             else:
                 # 同一事件持续
@@ -452,6 +456,24 @@ class RiskEngine:
         """判断时间戳是否处于夜间"""
         hour = datetime.fromtimestamp(ts).hour
         return hour >= config['NIGHT_START_HOUR'] or hour < config['NIGHT_END_HOUR']
+
+    def _build_feature_summary(
+        self, event_type: str, person: 'PersonResult',
+        state: PersonRiskState, config: Dict, now: float
+    ) -> dict:
+        """从当前状态构建特征摘要（仅使用已有数据，不新增计算逻辑）"""
+        summary = {
+            "event_type": event_type,
+            "movement_at_trigger": round(person.movement, 2) if person.movement is not None else None,
+        }
+        if event_type == 'FALLEN':
+            summary["fallen_confirm_frames"] = state.fallen_count
+            summary["fallen_threshold"] = config['FALLEN_CONFIRM_FRAMES']
+        elif event_type in ('STILLNESS', 'NIGHT_ABNORMAL'):
+            window_sec = round(now - state.movement_window[0].ts, 1) if state.movement_window else 0
+            summary["stillness_window_sec"] = window_sec
+            summary["movement_threshold"] = config['STILLNESS_MOVEMENT_THRESHOLD']
+        return summary
 
 
 # 全局单例（由 SecureCore 使用）

@@ -11,6 +11,7 @@ import uuid
 import asyncio
 import base64
 import struct
+import json
 from quart import Blueprint, jsonify, request, websocket
 import cv2
 import numpy as np
@@ -26,7 +27,9 @@ detect_bp = Blueprint('detect', __name__)
 
 # 视频存储目录
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'videos')
+SNAPSHOT_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots')
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
 # 全局 SecureCore 实例
 _secure_core = None
@@ -206,7 +209,8 @@ async def process_video_ws(video_id: str):
                     try:
                         for ch in event_changes:
                             _persist_event_change(db, ch, video_id, user_id,
-                                                  core.core_hash, core.model_version)
+                                                  core.core_hash, core.model_version,
+                                                  snapshot_frame=processed)
                             key = (ch.person_id, ch.event_type)
                             if ch.change_type == 'ended':
                                 active_events.pop(key, None)
@@ -425,7 +429,8 @@ async def detect_ws(video_id: str):
                 try:
                     for ch in event_changes:
                         _persist_event_change(db, ch, video_id, user_id,
-                                          core.core_hash, core.model_version)
+                                          core.core_hash, core.model_version,
+                                          snapshot_frame=processed)
                         # 更新活跃事件跟踪
                         key = (ch.person_id, ch.event_type)
                         if ch.change_type == 'ended':
@@ -522,19 +527,35 @@ async def detect_ws(video_id: str):
 
 
 def _persist_event_change(db, ch, video_id: str, user_id: int,
-                          core_hash: str = "", model_version: str = ""):
+                          core_hash: str = "", model_version: str = "",
+                          snapshot_frame=None):
     """将事件变更写入数据库"""
     if ch.change_type == 'started':
+        # 匿名化 person_id
+        from secure_core.event_builder import EventBuilder
+        anon_person_id = EventBuilder.anonymize_id(ch.person_id)
+
+        # 保存模糊帧快照
+        snapshot_path = None
+        if snapshot_frame is not None:
+            filename = f"evt_{video_id}_{ch.person_id}_{int(ch.start_ts)}.jpg"
+            filepath = os.path.join(SNAPSHOT_DIR, filename)
+            cv2.imwrite(filepath, snapshot_frame)
+            snapshot_path = filepath
+
         # 事件开始：使用 EventChange 中的时间
         event = Event(
             user_id=user_id,
             video_id=video_id,
             person_id=ch.person_id,
+            anon_person_id=anon_person_id,
             event_type=ch.event_type,
             risk_level=ch.risk_level,
             start_time=datetime.fromtimestamp(ch.start_ts),
             end_time=datetime.fromtimestamp(ch.start_ts),
             frame_count=ch.frame_count,
+            snapshot_path=snapshot_path,
+            feature_summary=json.dumps(ch.feature_summary, ensure_ascii=False) if ch.feature_summary else None,
             core_hash=core_hash,
             model_version=model_version,
             status='pending',
