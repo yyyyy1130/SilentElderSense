@@ -6,14 +6,14 @@ import uuid
 from typing import Optional, List, Dict
 import numpy as np
 
-from boxmot import ByteTrack
-
 from .types import FrameResult, PersonResult
 
 
 class SessionContext:
     """会话上下文"""
     def __init__(self, video_id: str, tracker_fps: float = 25.0):
+        from boxmot import ByteTrack
+
         self.video_id = video_id
         self.created_at = time.time()
         self.frame_count = 0
