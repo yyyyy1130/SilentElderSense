@@ -1,5 +1,14 @@
 <template>
   <div class="dashboard-page">
+    <!-- 隐私保护提示 -->
+    <div class="privacy-notice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span>统计结果已采用差分隐私技术处理（ε=0.8），数值与原始数据可能存在轻微差异，但不影响总体趋势判断。</span>
+    </div>
     <!-- 统计卡片 -->
     <section class="stats-section">
       <div class="stats-grid">
@@ -1161,5 +1170,29 @@ onMounted(async () => {
   .detail-item.full-width {
     grid-column: span 1;
   }
+}
+/* 隐私保护提示 */
+.privacy-notice {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--info-400);
+}
+
+.privacy-notice svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.privacy-notice span {
+  line-height: 1.4;
 }
 </style>

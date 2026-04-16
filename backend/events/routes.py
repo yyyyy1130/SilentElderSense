@@ -12,6 +12,18 @@ from quart import Blueprint, request, jsonify
 from auth.models import get_db
 from auth.utils import token_required
 from .models import Event
+# 导入差分隐私模块
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from dp_stats.budget_manager import BudgetManager
+from dp_stats.cache_service import DPResultCache
+from dp_stats.stats_service import StatsService
+
+# 初始化差分隐私服务（全局单例）
+budget_manager = BudgetManager(daily_limit=3.0)
+cache = DPResultCache(ttl_minutes=10)
+stats_service = StatsService(budget_manager=budget_manager, cache=cache)
 
 events_bp = Blueprint('events', __name__)
 
@@ -177,10 +189,12 @@ async def update_event(event_id: int):
 @token_required
 async def event_stats():
     """
-    事件统计
+    事件统计（已接入差分隐私保护）
 
     查询参数:
         days: 统计天数（默认7）
+
+    返回的统计数值（total, by_type, by_risk, by_status）已经过差分隐私加噪处理
     """
     user_id = request.current_user['user_id']
     days = int(request.args.get('days', 7))
@@ -204,7 +218,7 @@ async def event_stats():
         Event.user_id == user_id
     ).all()
 
-    # 本期统计
+    # 本期统计（真实值）
     stats = {
         'total': len(current_events),
         'by_type': {},
@@ -246,10 +260,68 @@ async def event_stats():
             prev_stats['by_status'][event.status] = 0
         prev_stats['by_status'][event.status] += 1
 
-    # 计算趋势
+    # ========== 差分隐私处理 ==========
+    # 对关键统计数值加噪声
+    user_id_str = str(user_id)
+    query_key = f"stats_{days}days"
+    current_time = datetime.now()
+    epsilon = 0.8  # 隐私预算
+
+    try:
+        # 对 total 加噪
+        private_total_result = stats_service.get_private_total_count(
+            user_id=user_id_str,
+            query_key=f"{query_key}_total",
+            true_count=stats['total'],
+            epsilon=epsilon,
+            now=current_time
+        )
+        stats['total'] = private_total_result['value']
+
+        # 对 by_type 加噪
+        if stats['by_type']:
+            private_type_result = stats_service.get_private_distribution(
+                user_id=user_id_str,
+                query_key=f"{query_key}_by_type",
+                true_counts=stats['by_type'],
+                epsilon=epsilon,
+                now=current_time
+            )
+            stats['by_type'] = private_type_result['value']
+
+        # 对 by_risk 加噪
+        if stats['by_risk']:
+            private_risk_result = stats_service.get_private_distribution(
+                user_id=user_id_str,
+                query_key=f"{query_key}_by_risk",
+                true_counts=stats['by_risk'],
+                epsilon=epsilon,
+                now=current_time
+            )
+            stats['by_risk'] = private_risk_result['value']
+
+        # 对 by_status 加噪
+        if stats['by_status']:
+            private_status_result = stats_service.get_private_distribution(
+                user_id=user_id_str,
+                query_key=f"{query_key}_by_status",
+                true_counts=stats['by_status'],
+                epsilon=epsilon,
+                now=current_time
+            )
+            stats['by_status'] = private_status_result['value']
+
+    except ValueError as e:
+        # 隐私预算超限时，返回缓存结果或提示
+        return jsonify({
+            'error': '隐私预算已用完，请稍后再试',
+            'detail': str(e)
+        }), 429
+
+    # ========== 趋势计算（基于加噪后的值） ==========
     def calc_trend(current, prev):
         if prev == 0:
-            return None  # 上期为0，无法计算趋势
+            return None
         return round((current - prev) / prev * 100, 1)
 
     trends = {
@@ -276,13 +348,16 @@ async def event_stats():
 
     stats['trends'] = trends
 
-    # 计算确认率：已确认 / (已确认 + 误报)
+    # 计算确认率（基于加噪后的值）
     confirmed = stats['by_status'].get('confirmed', 0)
     false_alarm = stats['by_status'].get('false_alarm', 0)
     if confirmed + false_alarm > 0:
         stats['confirmation_rate'] = round(confirmed / (confirmed + false_alarm) * 100, 1)
     else:
         stats['confirmation_rate'] = None
+
+    # 添加隐私保护说明
+    stats['privacy_notice'] = '统计结果已采用差分隐私技术处理（ε=0.8），数值与原始数据可能存在轻微差异'
 
     return jsonify(stats)
 
