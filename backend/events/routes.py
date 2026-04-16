@@ -8,7 +8,7 @@
     PUT  /api/events/<id>     - 更新事件状态
 """
 from datetime import datetime, timedelta
-from quart import Blueprint, request, jsonify
+from quart import Blueprint, request, jsonify, current_app
 from auth.models import get_db
 from auth.utils import token_required
 from .models import Event
@@ -261,58 +261,42 @@ async def event_stats():
         prev_stats['by_status'][event.status] += 1
 
     # ========== 差分隐私处理 ==========
-    # 对关键统计数值加噪声
+    # 数据始终加噪，预算检查仅生产环境启用
+    budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
+    epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
+
     user_id_str = str(user_id)
     query_key = f"stats_{days}days"
     current_time = datetime.now()
-    epsilon = 0.8  # 隐私预算
 
     try:
-        # 对 total 加噪
-        private_total_result = stats_service.get_private_total_count(
+        private_result = stats_service.get_private_stats(
             user_id=user_id_str,
-            query_key=f"{query_key}_total",
-            true_count=stats['total'],
+            query_key=query_key,
+            stats={
+                'total': stats['total'],
+                'by_type': stats['by_type'],
+                'by_risk': stats['by_risk'],
+                'by_status': stats['by_status']
+            },
             epsilon=epsilon,
-            now=current_time
+            now=current_time,
+            check_budget=budget_enabled  # 开发环境不检查预算，生产环境检查
         )
-        stats['total'] = private_total_result['value']
+        # 更新 stats 为加噪后的值
+        noisy_stats = private_result['value']
+        stats['total'] = noisy_stats['total']
+        stats['by_type'] = noisy_stats['by_type']
+        stats['by_risk'] = noisy_stats['by_risk']
+        stats['by_status'] = noisy_stats['by_status']
 
-        # 对 by_type 加噪
-        if stats['by_type']:
-            private_type_result = stats_service.get_private_distribution(
-                user_id=user_id_str,
-                query_key=f"{query_key}_by_type",
-                true_counts=stats['by_type'],
-                epsilon=epsilon,
-                now=current_time
-            )
-            stats['by_type'] = private_type_result['value']
-
-        # 对 by_risk 加噪
-        if stats['by_risk']:
-            private_risk_result = stats_service.get_private_distribution(
-                user_id=user_id_str,
-                query_key=f"{query_key}_by_risk",
-                true_counts=stats['by_risk'],
-                epsilon=epsilon,
-                now=current_time
-            )
-            stats['by_risk'] = private_risk_result['value']
-
-        # 对 by_status 加噪
-        if stats['by_status']:
-            private_status_result = stats_service.get_private_distribution(
-                user_id=user_id_str,
-                query_key=f"{query_key}_by_status",
-                true_counts=stats['by_status'],
-                epsilon=epsilon,
-                now=current_time
-            )
-            stats['by_status'] = private_status_result['value']
+        if budget_enabled:
+            stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），数值与原始数据可能存在轻微差异'
+        else:
+            stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），预算限制已禁用（开发/测试环境）'
 
     except ValueError as e:
-        # 隐私预算超限时，返回缓存结果或提示
+        # 隐私预算超限时，返回缓存结果或提示（仅生产环境）
         return jsonify({
             'error': '隐私预算已用完，请稍后再试',
             'detail': str(e)
@@ -355,9 +339,6 @@ async def event_stats():
         stats['confirmation_rate'] = round(confirmed / (confirmed + false_alarm) * 100, 1)
     else:
         stats['confirmation_rate'] = None
-
-    # 添加隐私保护说明
-    stats['privacy_notice'] = '统计结果已采用差分隐私技术处理（ε=0.8），数值与原始数据可能存在轻微差异'
 
     return jsonify(stats)
 

@@ -6,6 +6,16 @@
       <div class="bg-grid"></div>
     </div>
 
+    <!-- 隐私保护提示 -->
+    <div class="privacy-notice" v-if="privacyNotice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span>{{ privacyNotice }}</span>
+    </div>
+
     <!-- 页面头部 -->
     <header class="page-header">
       <div class="header-left">
@@ -299,6 +309,7 @@ const timeRange = ref('week')
 const customDateRange = ref(null)
 const loading = ref(false)
 const searchQuery = ref('')
+const privacyNotice = ref('')
 
 // 图表引用
 const trendChartRef = ref(null)
@@ -467,6 +478,7 @@ const loadData = async () => {
     eventsData.value = eventsRes.events || []
     total.value = eventsRes.total || 0
     stats.value = statsRes
+    privacyNotice.value = statsRes.privacy_notice || ''
     dailyTrendData.value = trendRes
 
     updateCharts()
@@ -826,6 +838,33 @@ watch(timeRange, () => {
   background-size: 60px 60px;
 }
 
+/* 隐私保护提示 */
+.privacy-notice {
+  position: relative;
+  z-index: 1;
+  margin: 24px 32px 0;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--info-400);
+}
+
+.privacy-notice svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.privacy-notice span {
+  line-height: 1.4;
+}
+
 /* 页面头部 */
 .page-header {
   position: relative;
@@ -934,7 +973,7 @@ watch(timeRange, () => {
 .stats-section {
   position: relative;
   z-index: 1;
-  padding: 24px 32px;
+  padding: 16px 32px 24px;
 }
 
 .stats-grid {

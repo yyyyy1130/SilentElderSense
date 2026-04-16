@@ -1,5 +1,5 @@
 from quart import Quart, request, jsonify
-from config import Config
+from config import Config, DevelopmentConfig, ProductionConfig
 from auth import init_db, auth_bp
 from detect import detect_bp
 from events import events_bp
@@ -7,9 +7,21 @@ from alerts import alerts_bp
 from datetime import datetime
 import psutil
 import os
+import argparse
+
+# 在模块加载时解析参数（影响配置选择）
+parser = argparse.ArgumentParser(description='Silent Elder Sense Backend')
+parser.add_argument('--prod', action='store_true', help='生产模式（启用差分隐私）')
+parser.add_argument('--port', type=int, default=8000, help='端口')
+_args, _remaining = parser.parse_known_args()
 
 app = Quart(__name__)
-app.config.from_object(Config)
+
+# 根据参数选择配置
+if _args.prod:
+    app.config.from_object(ProductionConfig)
+else:
+    app.config.from_object(DevelopmentConfig)
 
 # 允许上传大文件（最大 500MB）
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
@@ -51,7 +63,10 @@ async def handle_options(path=''):
 
 @app.route('/')
 async def index():
-    return {'message': 'Backend API is running'}
+    return {
+        'message': 'Backend API is running',
+        'dp_budget_enabled': app.config.get('DP_BUDGET_ENABLED', True)
+    }
 
 
 @app.route('/api/system/status', methods=['GET'])
@@ -93,4 +108,7 @@ async def system_status():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    # 配置已在模块顶部根据参数加载
+    dp_status = "启用" if _args.prod else "禁用"
+    print(f"启动模式：{'生产' if _args.prod else '开发'}（差分隐私 {dp_status}）")
+    app.run(debug=not _args.prod, port=_args.port)
