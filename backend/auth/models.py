@@ -18,6 +18,8 @@ class User(Base):
     password_hash = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False)
     role = Column(String(20), default='user')
+    platform_org_id = Column(Integer, nullable=True)
+    community_group_id = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
     def set_password(self, password):
@@ -44,6 +46,7 @@ def init_db(app):
     # SQLite 迁移
     _migrate_events_table(engine)
     _migrate_users_role(engine)
+    _migrate_users_org(engine)
 
     # 创建默认管理员账户
     db = SessionLocal()
@@ -116,4 +119,19 @@ def _migrate_users_role(engine):
         conn.execute(text("UPDATE users SET role = 'admin' WHERE is_admin = 1 AND (role IS NULL OR role = 'user')"))
         # 确保所有用户都有 role 值
         conn.execute(text("UPDATE users SET role = 'user' WHERE role IS NULL"))
+        conn.commit()
+
+
+def _migrate_users_org(engine):
+    """为 users 表添加 platform_org_id 和 community_group_id 字段"""
+    from sqlalchemy import inspect, text
+    insp = inspect(engine)
+    if 'users' not in insp.get_table_names():
+        return
+    existing = {col['name'] for col in insp.get_columns('users')}
+    with engine.connect() as conn:
+        if 'platform_org_id' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN platform_org_id INTEGER'))
+        if 'community_group_id' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN community_group_id INTEGER'))
         conn.commit()

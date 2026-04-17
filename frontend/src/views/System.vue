@@ -468,6 +468,49 @@
           </button>
         </div>
       </section>
+
+      <!-- 社区组选择（仅普通用户） -->
+      <section v-show="activeTab === 'community'" class="content-section">
+        <div class="settings-card">
+          <div class="card-header">
+            <div class="header-text">
+              <h3>社区组选择</h3>
+              <p>选择您所属的社区组，可随时切换</p>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">当前社区组</label>
+              <div v-if="currentCommunity" class="current-community">
+                <span class="community-name">{{ currentCommunity.name }}</span>
+                <span class="community-org">{{ currentCommunity.org_name }}</span>
+                <button class="btn-unbind" @click="unbindCommunity">取消绑定</button>
+              </div>
+              <div v-else class="no-community">未选择社区组</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">选择社区组</label>
+              <input v-model="communitySearch" placeholder="搜索社区组..." class="form-input" @input="searchCommunities" />
+              <div class="community-list" v-if="availableGroups.length > 0">
+                <div
+                  v-for="g in availableGroups"
+                  :key="g.id"
+                  class="community-item"
+                  :class="{ selected: currentCommunity?.id === g.id }"
+                  @click="selectCommunity(g)"
+                >
+                  <div class="community-info">
+                    <span class="community-name">{{ g.name }}</span>
+                    <span class="community-meta">{{ g.org_name }} · {{ g.member_count }} 人</span>
+                  </div>
+                  <span v-if="currentCommunity?.id === g.id" class="check-mark">✓</span>
+                </div>
+              </div>
+              <div v-else class="no-results">暂无可选社区组</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 </template>
@@ -484,30 +527,50 @@ import {
   getDetectConfig,
   updateDetectConfig
 } from '@/api/detect'
+import { getAvailableGroups, getUserCommunity, setUserCommunity } from '@/api/platform'
+import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 
 // 标签页配置
-const tabs = [
-  {
-    key: 'alert',
-    label: '告警配置',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
-      h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })
-    ])
-  },
-  {
-    key: 'detect',
-    label: '检测配置',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('circle', { cx: '12', cy: '12', r: '3' }),
-      h('path', { d: 'M12 1v6m0 6v10' }),
-      h('path', { d: 'M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24' }),
-      h('path', { d: 'M1 12h6m6 0h10' }),
-      h('path', { d: 'M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24' })
-    ])
+const authStore = useAuthStore()
+const isUser = computed(() => authStore.user?.role === 'user')
+
+const tabs = computed(() => {
+  const items = [
+    {
+      key: 'alert',
+      label: '告警配置',
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
+        h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })
+      ])
+    },
+    {
+      key: 'detect',
+      label: '检测配置',
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('circle', { cx: '12', cy: '12', r: '3' }),
+        h('path', { d: 'M12 1v6m0 6v10' }),
+        h('path', { d: 'M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24' }),
+        h('path', { d: 'M1 12h6m6 0h10' }),
+        h('path', { d: 'M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24' })
+      ])
+    },
+  ]
+  if (isUser.value) {
+    items.push({
+      key: 'community',
+      label: '社区组',
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' }),
+        h('circle', { cx: '9', cy: '7', r: '4' }),
+        h('path', { d: 'M23 21v-2a4 4 0 0 0-3-3.87' }),
+        h('path', { d: 'M16 3.13a4 4 0 0 1 0 7.75' })
+      ])
+    })
   }
-]
+  return items
+})
 
 const activeTab = ref('alert')
 const saving = ref(false)
@@ -698,9 +761,52 @@ const resendAlert = async (alertId) => {
   }
 }
 
+// 社区组
+const communitySearch = ref('')
+const availableGroups = ref([])
+const currentCommunity = ref(null)
+
+async function loadUserCommunity() {
+  try {
+    const res = await getUserCommunity()
+    currentCommunity.value = res.community
+  } catch (e) { console.error(e) }
+}
+
+async function searchCommunities() {
+  try {
+    const res = await getAvailableGroups(communitySearch.value)
+    availableGroups.value = Array.isArray(res.data) ? res.data : res
+  } catch (e) { console.error(e) }
+}
+
+async function selectCommunity(group) {
+  try {
+    const res = await setUserCommunity(group.id)
+    currentCommunity.value = res.community
+    ElMessage.success('社区组已更新')
+  } catch (e) {
+    ElMessage.error('切换失败')
+  }
+}
+
+async function unbindCommunity() {
+  try {
+    await setUserCommunity(null)
+    currentCommunity.value = null
+    ElMessage.success('已取消绑定')
+  } catch (e) {
+    ElMessage.error('取消绑定失败')
+  }
+}
+
 onMounted(() => {
   loadConfig()
   loadDetectConfig()
+  if (isUser.value) {
+    loadUserCommunity()
+    searchCommunities()
+  }
 })
 </script>
 
@@ -1709,5 +1815,101 @@ onMounted(() => {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+/* 社区组选择样式 */
+.current-community {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 10px;
+}
+
+.current-community .community-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f0f0f5;
+}
+
+.current-community .community-org {
+  font-size: 13px;
+  color: #888;
+}
+
+.btn-unbind {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.no-community {
+  color: #888;
+  font-size: 14px;
+}
+
+.community-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.community-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.community-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.community-item.selected {
+  border-color: rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.community-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.community-info .community-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ddd;
+}
+
+.community-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.check-mark {
+  color: #f97316;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.no-results {
+  color: #666;
+  font-size: 14px;
+  padding: 16px;
+  text-align: center;
 }
 </style>

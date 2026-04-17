@@ -4,6 +4,8 @@ from auth import init_db, auth_bp
 from detect import detect_bp
 from events import events_bp
 from alerts import alerts_bp
+from platform_org import platform_bp
+from platform_org import models as platform_models  # noqa: F401 - 确保 create_all 能发现新表
 from datetime import datetime
 import psutil
 import os
@@ -34,6 +36,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(detect_bp)
 app.register_blueprint(events_bp)
 app.register_blueprint(alerts_bp)
+app.register_blueprint(platform_bp)
 
 # CORS 中间件（支持预检请求和携带认证的请求）
 @app.after_request

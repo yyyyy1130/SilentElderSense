@@ -114,60 +114,89 @@ const authStore = useAuthStore()
 const eventsStore = useEventsStore()
 
 // 菜单项
-const mainMenuItems = computed(() => [
-  {
-    path: '/dashboard',
-    label: '事件看板',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('rect', { x: '3', y: '3', width: '7', height: '7' }),
-      h('rect', { x: '14', y: '3', width: '7', height: '7' }),
-      h('rect', { x: '14', y: '14', width: '7', height: '7' }),
-      h('rect', { x: '3', y: '14', width: '7', height: '7' })
-    ])
-  },
-  {
-    path: '/analysis',
-    label: '统计分析',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('line', { x1: '18', y1: '20', x2: '18', y2: '10' }),
-      h('line', { x1: '12', y1: '20', x2: '12', y2: '4' }),
-      h('line', { x1: '6', y1: '20', x2: '6', y2: '14' })
-    ])
-  },
-  {
-    path: '/monitor',
-    label: '实时监控',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('path', { d: 'M23 7l-7 5 7 5V7z' }),
-      h('rect', { x: '1', y: '5', width: '15', height: '14', rx: '2', ry: '2' })
-    ])
-  },
-  {
-    path: '/video-detect',
-    label: '视频检测',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('polygon', { points: '23 7 16 12 23 17 23 7' }),
-      h('rect', { x: '1', y: '5', width: '15', height: '14', rx: '2', ry: '2' })
-    ])
-  },
-  {
-    path: '/visualization',
-    label: '可视化大屏',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('rect', { x: '2', y: '3', width: '20', height: '14', rx: '2', ry: '2' }),
-      h('line', { x1: '8', y1: '21', x2: '16', y2: '21' }),
-      h('line', { x1: '12', y1: '17', x2: '12', y2: '21' })
-    ])
-  },
-  {
-    path: '/system',
-    label: '系统设置',
-    icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
-      h('circle', { cx: '12', cy: '12', r: '3' }),
-      h('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' })
-    ])
-  }
-])
+const mainMenuItems = computed(() => {
+  const role = authStore.user?.role
+  const allItems = [
+    {
+      path: '/dashboard',
+      label: '事件看板',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('rect', { x: '3', y: '3', width: '7', height: '7' }),
+        h('rect', { x: '14', y: '3', width: '7', height: '7' }),
+        h('rect', { x: '14', y: '14', width: '7', height: '7' }),
+        h('rect', { x: '3', y: '14', width: '7', height: '7' })
+      ])
+    },
+    {
+      path: '/analysis',
+      label: '统计分析',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('line', { x1: '18', y1: '20', x2: '18', y2: '10' }),
+        h('line', { x1: '12', y1: '20', x2: '12', y2: '4' }),
+        h('line', { x1: '6', y1: '20', x2: '6', y2: '14' })
+      ])
+    },
+    {
+      path: '/monitor',
+      label: '实时监控',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('path', { d: 'M23 7l-7 5 7 5V7z' }),
+        h('rect', { x: '1', y: '5', width: '15', height: '14', rx: '2', ry: '2' })
+      ])
+    },
+    {
+      path: '/video-detect',
+      label: '视频检测',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('polygon', { points: '23 7 16 12 23 17 23 7' }),
+        h('rect', { x: '1', y: '5', width: '15', height: '14', rx: '2', ry: '2' })
+      ])
+    },
+    {
+      path: '/visualization',
+      label: '可视化大屏',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('rect', { x: '2', y: '3', width: '20', height: '14', rx: '2', ry: '2' }),
+        h('line', { x1: '8', y1: '21', x2: '16', y2: '21' }),
+        h('line', { x1: '12', y1: '17', x2: '12', y2: '21' })
+      ])
+    },
+    {
+      path: '/platform',
+      label: '平台分析',
+      roles: ['platform'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('line', { x1: '18', y1: '20', x2: '18', y2: '10' }),
+        h('line', { x1: '12', y1: '20', x2: '12', y2: '4' }),
+        h('line', { x1: '6', y1: '20', x2: '6', y2: '14' })
+      ])
+    },
+    {
+      path: '/admin-platform',
+      label: '平台管理',
+      roles: ['admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('circle', { cx: '12', cy: '12', r: '3' }),
+        h('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' })
+      ])
+    },
+    {
+      path: '/system',
+      label: '系统设置',
+      roles: ['user', 'admin'],
+      icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
+        h('circle', { cx: '12', cy: '12', r: '3' }),
+        h('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' })
+      ])
+    },
+  ]
+  return allItems.filter(item => item.roles.includes(role))
+})
 
 const isActive = (path) => {
   return route.path === path
@@ -191,7 +220,8 @@ const getRoleName = (role) => {
     admin: '系统管理员',
     user: '普通用户',
     family: '家属用户',
-    monitor: '监护人'
+    monitor: '监护人',
+    platform: '平台管理员'
   }
   return roleMap[role] || '访客'
 }

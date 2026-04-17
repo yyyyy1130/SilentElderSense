@@ -50,7 +50,9 @@ async def login():
             'token_type': 'Bearer',
             'user_id': user.id,
             'username': user.username,
-            'role': user.role
+            'role': user.role,
+            'platform_org_id': user.platform_org_id,
+            'community_group_id': user.community_group_id,
         }), 200
     else:
         return jsonify({'error': '用户名或密码错误'}), 401
@@ -84,7 +86,8 @@ async def create_platform_user():
     user = User(
         username=data['username'],
         email=data.get('email'),
-        role='platform'
+        role='platform',
+        platform_org_id=data.get('platform_org_id'),
     )
     user.set_password(data['password'])
 

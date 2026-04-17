@@ -20,7 +20,9 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = {
           id: response.user_id,
           username: response.username,
-          role: response.role || 'user'
+          role: response.role || 'user',
+          platform_org_id: response.platform_org_id || null,
+          community_group_id: response.community_group_id || null,
         }
 
         // 保存 token 到 localStorage

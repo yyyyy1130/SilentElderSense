@@ -17,3 +17,12 @@ export function register(data) {
     data
   })
 }
+
+// 创建平台用户（管理员）
+export function createPlatformUser(data) {
+  return request({
+    url: '/users/platform',
+    method: 'post',
+    data
+  })
+}

@@ -43,6 +43,18 @@ const routes = [
         name: 'System',
         component: () => import('@/views/System.vue'),
         meta: { title: '系统设置' }
+      },
+      {
+        path: 'platform',
+        name: 'PlatformDashboard',
+        component: () => import('@/views/PlatformDashboard.vue'),
+        meta: { title: '平台分析', role: 'platform' }
+      },
+      {
+        path: 'admin-platform',
+        name: 'AdminPlatform',
+        component: () => import('@/views/AdminPlatform.vue'),
+        meta: { title: '平台管理', role: 'admin' }
       }
     ]
   },
@@ -69,7 +81,10 @@ router.beforeEach((to, from, next) => {
     // 未登录，跳转到登录页
     next('/login')
   } else if (to.meta.role === 'admin' && !authStore.isAdmin) {
-    // 权限不足，返回上一页或跳转到首页
+    // 管理员权限不足
+    next(from.path || '/dashboard')
+  } else if (to.meta.role === 'platform' && !authStore.isPlatform) {
+    // 平台用户权限不足
     next(from.path || '/dashboard')
   } else {
     next()
