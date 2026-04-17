@@ -173,12 +173,15 @@ async def list_my_communities():
 
 # ── 平台用户：聚合统计 ──────────────────────────
 
-def _get_platform_user_ids(db, platform_user_id: int):
-    """获取平台用户下所有社区组的用户ID列表"""
-    group_ids = [g.id for g in db.query(CommunityGroup).filter(
+def _get_platform_user_ids(db, platform_user_id: int, community_group_id: int = None):
+    """获取平台用户下社区组的用户ID列表，可按单个社区组过滤"""
+    query = db.query(CommunityGroup).filter(
         CommunityGroup.platform_user_id == platform_user_id,
         CommunityGroup.status == 'active',
-    ).all()]
+    )
+    if community_group_id is not None:
+        query = query.filter(CommunityGroup.id == community_group_id)
+    group_ids = [g.id for g in query.all()]
     if not group_ids:
         return []
     return [u.id for u in db.query(User).filter(
@@ -192,9 +195,10 @@ def _get_platform_user_ids(db, platform_user_id: int):
 async def platform_stats():
     user_id = request.current_user['user_id']
     days = int(request.args.get('days', 7))
+    community_group_id = request.args.get('community_group_id', type=int)
 
     db = next(get_db())
-    member_ids = _get_platform_user_ids(db, user_id)
+    member_ids = _get_platform_user_ids(db, user_id, community_group_id)
 
     now = datetime.now()
     start_date = now - timedelta(days=days)
@@ -238,7 +242,7 @@ async def platform_stats():
     cache = DPResultCache(ttl_minutes=10)
     svc = StatsService(budget_manager=bm, cache=cache)
 
-    query_key = f"stats_{days}days"
+    query_key = f"stats_{days}days_group_{community_group_id or 'all'}"
     try:
         private_result = svc.get_private_stats(
             user_id=f"platform_{user_id}",
@@ -276,9 +280,10 @@ async def platform_stats():
 async def platform_daily_trend():
     user_id = request.current_user['user_id']
     days = int(request.args.get('days', 7))
+    community_group_id = request.args.get('community_group_id', type=int)
 
     db = next(get_db())
-    member_ids = _get_platform_user_ids(db, user_id)
+    member_ids = _get_platform_user_ids(db, user_id, community_group_id)
     now = datetime.now()
     start_date = (now - timedelta(days=days - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -300,9 +305,36 @@ async def platform_daily_trend():
         if date_key in daily_data and e.event_type in event_types:
             daily_data[date_key][e.event_type] += 1
 
+    budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
+    epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
+
+    import sys, os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from dp_stats.stats_service import StatsService
+    from dp_stats.budget_manager import BudgetManager
+    from dp_stats.cache_service import DPResultCache
+
+    bm = BudgetManager(daily_limit=3.0)
+    cache = DPResultCache(ttl_minutes=10)
+    svc = StatsService(budget_manager=bm, cache=cache)
+
+    query_key = f"daily_stats_{days}days_group_{community_group_id or 'all'}"
+    try:
+        private_result = svc.get_private_daily_trend(
+            user_id=f"platform_{user_id}",
+            query_key=query_key,
+            daily_data=daily_data,
+            epsilon=epsilon,
+            now=now,
+            check_budget=budget_enabled,
+        )
+        noisy_daily_data = private_result['value']
+    except ValueError as e:
+        return jsonify({'error': '隐私预算已用完，请稍后再试', 'detail': str(e)}), 429
+
     return jsonify({
         'dates': dates,
-        'by_type': {t: [daily_data[d][t] for d in dates] for t in event_types},
+        'by_type': {t: [noisy_daily_data[d].get(t, 0) for d in dates] for t in event_types},
     })
 
 
