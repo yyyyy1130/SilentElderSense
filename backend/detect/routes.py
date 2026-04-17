@@ -17,7 +17,7 @@ import cv2
 import numpy as np
 from secure_core import SecureCore
 from secure_core.risk_engine import RISK_COLORS_BGR, RISK_REASON_LABELS
-from auth.utils import token_required
+from auth.utils import token_required, role_required
 from auth.models import get_db
 from events.models import Event
 from alerts.service import AlertService
@@ -301,6 +301,7 @@ async def process_video_ws(video_id: str):
 
 @detect_bp.route('/api/session/create', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def create_session():
     """创建实时检测会话（需要登录）"""
     user_id = request.current_user['user_id']
@@ -314,6 +315,7 @@ async def create_session():
 
 @detect_bp.route('/api/session/close/<video_id>', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def close_session(video_id: str):
     """关闭实时检测会话"""
     user_id = request.current_user['user_id']
@@ -616,6 +618,7 @@ def build_response(detected: bool, risk_results) -> dict:
 
 @detect_bp.route('/api/detect/config', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def get_detect_config():
     """获取当前用户的检测配置"""
     from .service import get_detection_config_service
@@ -627,6 +630,7 @@ async def get_detect_config():
 
 @detect_bp.route('/api/detect/config', methods=['PUT'])
 @token_required
+@role_required('user', 'admin')
 async def update_detect_config():
     """
     更新当前用户的检测配置

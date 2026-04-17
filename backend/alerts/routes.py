@@ -11,7 +11,7 @@
 from datetime import datetime, timedelta
 from quart import Blueprint, request, jsonify
 from auth.models import get_db
-from auth.utils import token_required
+from auth.utils import token_required, role_required
 from .models import AlertConfig, AlertHistory
 from .service import AlertService
 
@@ -31,6 +31,7 @@ def get_alert_service() -> AlertService:
 
 @alerts_bp.route('/api/alerts/config', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def get_config():
     """获取当前用户告警配置"""
     user_id = request.current_user['user_id']
@@ -54,6 +55,7 @@ async def get_config():
 
 @alerts_bp.route('/api/alerts/config', methods=['PUT'])
 @token_required
+@role_required('user', 'admin')
 async def update_config():
     """
     更新告警配置
@@ -97,6 +99,7 @@ async def update_config():
 
 @alerts_bp.route('/api/alerts/history', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def list_history():
     """
     查询告警历史
@@ -139,6 +142,7 @@ async def list_history():
 
 @alerts_bp.route('/api/alerts/trigger', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def trigger_alert():
     """
     手动触发告警
@@ -171,6 +175,7 @@ async def trigger_alert():
 
 @alerts_bp.route('/api/alerts/<int:alert_id>/send', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def resend_alert(alert_id: int):
     """重发告警"""
     user_id = request.current_user['user_id']
@@ -192,6 +197,7 @@ async def resend_alert(alert_id: int):
 
 @alerts_bp.route('/api/alerts/<int:alert_id>/acknowledge', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def acknowledge_alert(alert_id: int):
     """确认告警"""
     user_id = request.current_user['user_id']
@@ -207,6 +213,7 @@ async def acknowledge_alert(alert_id: int):
 
 @alerts_bp.route('/api/alerts/stats', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def alert_stats():
     """
     告警统计

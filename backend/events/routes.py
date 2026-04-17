@@ -10,7 +10,7 @@
 from datetime import datetime, timedelta
 from quart import Blueprint, request, jsonify, current_app
 from auth.models import get_db
-from auth.utils import token_required
+from auth.utils import token_required, role_required
 from .models import Event
 # 导入差分隐私模块
 import sys
@@ -30,6 +30,7 @@ events_bp = Blueprint('events', __name__)
 
 @events_bp.route('/api/events', methods=['POST'])
 @token_required
+@role_required('user', 'admin')
 async def create_event():
     """
     记录事件
@@ -80,6 +81,7 @@ async def create_event():
 
 @events_bp.route('/api/events', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def list_events():
     """
     查询事件列表
@@ -136,6 +138,7 @@ async def list_events():
 
 @events_bp.route('/api/events/<int:event_id>', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def get_event(event_id: int):
     """获取事件详情"""
     user_id = request.current_user['user_id']
@@ -150,6 +153,7 @@ async def get_event(event_id: int):
 
 @events_bp.route('/api/events/<int:event_id>', methods=['PUT'])
 @token_required
+@role_required('user', 'admin')
 async def update_event(event_id: int):
     """
     更新事件状态
@@ -189,14 +193,16 @@ async def update_event(event_id: int):
 @token_required
 async def event_stats():
     """
-    事件统计（已接入差分隐私保护）
+    事件统计（基于角色的差分隐私策略）
+
+    - user/admin: 返回原始精确统计
+    - platform: 强制经过差分隐私加噪处理
 
     查询参数:
         days: 统计天数（默认7）
-
-    返回的统计数值（total, by_type, by_risk, by_status）已经过差分隐私加噪处理
     """
     user_id = request.current_user['user_id']
+    user_role = request.current_user.get('role', 'user')
     days = int(request.args.get('days', 7))
 
     now = datetime.now()
@@ -260,51 +266,53 @@ async def event_stats():
             prev_stats['by_status'][event.status] = 0
         prev_stats['by_status'][event.status] += 1
 
-    # ========== 差分隐私处理 ==========
-    # 数据始终加噪，预算检查仅生产环境启用
-    budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
-    epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
+    # ========== 基于角色的差分隐私策略 ==========
+    if user_role == 'platform':
+        # 平台用户：强制经过差分隐私加噪
+        budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
+        epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
 
-    user_id_str = str(user_id)
-    query_key = f"stats_{days}days"
-    current_time = datetime.now()
+        user_id_str = str(user_id)
+        query_key = f"stats_{days}days"
+        current_time = datetime.now()
 
-    try:
-        private_result = stats_service.get_private_stats(
-            user_id=user_id_str,
-            query_key=query_key,
-            stats={
-                'total': stats['total'],
-                'by_type': stats['by_type'],
-                'by_risk': stats['by_risk'],
-                'by_status': stats['by_status']
-            },
-            epsilon=epsilon,
-            now=current_time,
-            check_budget=budget_enabled  # 开发环境不检查预算，生产环境检查
-        )
-        # 更新 stats 为加噪后的值
-        noisy_stats = private_result['value']
-        display_stats = private_result.get('display', {})
-        stats['total'] = noisy_stats['total']
-        stats['by_type'] = noisy_stats['by_type']
-        stats['by_risk'] = noisy_stats['by_risk']
-        stats['by_status'] = noisy_stats['by_status']
-        stats['display'] = display_stats
+        try:
+            private_result = stats_service.get_private_stats(
+                user_id=user_id_str,
+                query_key=query_key,
+                stats={
+                    'total': stats['total'],
+                    'by_type': stats['by_type'],
+                    'by_risk': stats['by_risk'],
+                    'by_status': stats['by_status']
+                },
+                epsilon=epsilon,
+                now=current_time,
+                check_budget=budget_enabled
+            )
+            noisy_stats = private_result['value']
+            display_stats = private_result.get('display', {})
+            stats['total'] = noisy_stats['total']
+            stats['by_type'] = noisy_stats['by_type']
+            stats['by_risk'] = noisy_stats['by_risk']
+            stats['by_status'] = noisy_stats['by_status']
+            stats['display'] = display_stats
 
-        if budget_enabled:
-            stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），数值与原始数据可能存在轻微差异'
-        else:
-            stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），预算限制已禁用（开发/测试环境）'
+            if budget_enabled:
+                stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），数值与原始数据可能存在轻微差异'
+            else:
+                stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），预算限制已禁用（开发/测试环境）'
 
-    except ValueError as e:
-        # 隐私预算超限时，返回缓存结果或提示（仅生产环境）
-        return jsonify({
-            'error': '隐私预算已用完，请稍后再试',
-            'detail': str(e)
-        }), 429
+        except ValueError as e:
+            return jsonify({
+                'error': '隐私预算已用完，请稍后再试',
+                'detail': str(e)
+            }), 429
+    else:
+        # 家庭用户/管理员：返回原始精确统计
+        stats['privacy_notice'] = None
 
-    # ========== 趋势计算（基于加噪后的值） ==========
+    # ========== 趋势计算 ==========
     def calc_trend(current, prev):
         if prev == 0:
             return None
@@ -347,6 +355,7 @@ async def event_stats():
 
 @events_bp.route('/api/events/hourly', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def hourly_trend():
     """
     小时级事件趋势（过去24小时）
@@ -397,6 +406,7 @@ async def hourly_trend():
 
 @events_bp.route('/api/events/daily', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def daily_trend():
     """
     每日事件趋势
@@ -454,6 +464,7 @@ async def daily_trend():
 
 @events_bp.route('/api/events/export', methods=['GET'])
 @token_required
+@role_required('user', 'admin')
 async def export_events():
     """
     导出事件数据为CSV

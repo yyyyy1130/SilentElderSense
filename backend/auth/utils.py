@@ -11,11 +11,12 @@ JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-jwt-secret-key-change-this-in
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
 
 
-def generate_token(user_id, username):
+def generate_token(user_id, username, role='user'):
     """生成JWT token"""
     payload = {
         'user_id': user_id,
         'username': username,
+        'role': role,
         'exp': datetime.utcnow() + JWT_ACCESS_TOKEN_EXPIRES,
         'iat': datetime.utcnow()
     }
@@ -66,17 +67,21 @@ def admin_required(f):
     """管理员权限装饰器（需要在 token_required 之后使用）"""
     @wraps(f)
     async def decorated_function(*args, **kwargs):
-        # 检查用户是否为管理员
-        from auth.models import SessionLocal, User
-        user_id = request.current_user.get('user_id')
-
-        db = SessionLocal()
-        user = db.query(User).filter(User.id == user_id).first()
-        db.close()
-
-        if not user or not user.is_admin:
+        role = request.current_user.get('role', 'user')
+        if role != 'admin':
             return jsonify({'error': '需要管理员权限'}), 403
-
         return await f(*args, **kwargs)
-
     return decorated_function
+
+
+def role_required(*allowed_roles):
+    """角色权限装饰器（需要在 token_required 之后使用）"""
+    def decorator(f):
+        @wraps(f)
+        async def decorated_function(*args, **kwargs):
+            role = request.current_user.get('role', 'user')
+            if role not in allowed_roles:
+                return jsonify({'error': '权限不足'}), 403
+            return await f(*args, **kwargs)
+        return decorated_function
+    return decorator
