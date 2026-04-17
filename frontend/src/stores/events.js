@@ -154,16 +154,28 @@ export const useEventsStore = defineStore('events', () => {
     accuracy: 94.5
   })
 
+  // 低频阈值隐藏辅助函数
+  const maskLowFreq = (value) => {
+    const num = Number(value)
+    if (isNaN(num)) return value
+    return (num > 0 && num < 5) ? '<5' : num
+  }
+
   const updateStatsFormatted = () => {
     const stats = statistics.value
+    const d = stats.display || {}
+    const rawConfirmed = stats.by_status?.confirmed || 0
+    const rawFalseAlarm = stats.by_status?.false_alarm || 0
+    const handledNum = rawConfirmed + rawFalseAlarm
+
     statsFormatted.value = {
-      total: stats.total || 0,
-      today: stats.by_status?.pending || 0,
-      fall: stats.by_type?.FALL || stats.by_type?.fall || 0,
-      stillness: (stats.by_type?.STILLNESS || stats.by_type?.stillness || 0) + (stats.by_type?.STATIC || stats.by_type?.static || 0),
-      nightActivity: stats.by_type?.NIGHT_ACTIVITY || stats.by_type?.night_activity || 0,
-      handled: (stats.by_status?.confirmed || 0) + (stats.by_status?.false_alarm || 0),
-      pending: stats.by_status?.pending || 0,
+      total: d.total ?? stats.total ?? 0,
+      today: d.by_status?.pending ?? stats.by_status?.pending ?? 0,
+      fall: d.by_type?.FALLEN ?? stats.by_type?.FALLEN ?? 0,
+      stillness: d.by_type?.STILLNESS ?? stats.by_type?.STILLNESS ?? 0,
+      nightActivity: d.by_type?.NIGHT_ABNORMAL ?? stats.by_type?.NIGHT_ABNORMAL ?? 0,
+      handled: maskLowFreq(handledNum),
+      pending: d.by_status?.pending ?? stats.by_status?.pending ?? 0,
       accuracy: 94.5
     }
   }

@@ -285,10 +285,12 @@ async def event_stats():
         )
         # 更新 stats 为加噪后的值
         noisy_stats = private_result['value']
+        display_stats = private_result.get('display', {})
         stats['total'] = noisy_stats['total']
         stats['by_type'] = noisy_stats['by_type']
         stats['by_risk'] = noisy_stats['by_risk']
         stats['by_status'] = noisy_stats['by_status']
+        stats['display'] = display_stats
 
         if budget_enabled:
             stats['privacy_notice'] = f'统计结果已采用差分隐私技术处理（ε={epsilon}），数值与原始数据可能存在轻微差异'

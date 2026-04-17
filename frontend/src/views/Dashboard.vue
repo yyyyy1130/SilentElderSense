@@ -315,7 +315,7 @@ const statsCards = computed(() => {
     {
       key: 'total',
       label: '总事件数',
-      value: stats.total,
+      value: eventsStore.statsFormatted.total,
       type: 'primary',
       trend: trends.total,
       icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [

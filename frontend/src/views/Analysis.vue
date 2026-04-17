@@ -349,11 +349,12 @@ const eventTypes = [
 const summaryStats = computed(() => {
   const s = stats.value
   const t = s.trends || {}
+  const d = s.display || {}
 
   return [
     {
       label: '总事件数',
-      value: s.total,
+      value: d.total ?? s.total,
       progress: Math.min((s.total / 100) * 100, 100),
       trend: t.total,
       color: '#f97316',
@@ -363,7 +364,7 @@ const summaryStats = computed(() => {
     },
     {
       label: '高风险事件',
-      value: s.by_risk?.HIGH || 0,
+      value: d.by_risk?.HIGH ?? (s.by_risk?.HIGH || 0),
       progress: s.total > 0 ? ((s.by_risk?.HIGH || 0) / s.total) * 100 : 0,
       trend: t.by_risk?.HIGH,
       color: '#ef4444',
@@ -373,7 +374,7 @@ const summaryStats = computed(() => {
     },
     {
       label: '待处理',
-      value: s.by_status?.pending || 0,
+      value: d.by_status?.pending ?? (s.by_status?.pending || 0),
       progress: s.total > 0 ? ((s.by_status?.pending || 0) / s.total) * 100 : 0,
       color: '#eab308',
       icon: h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2' }, [
@@ -383,7 +384,7 @@ const summaryStats = computed(() => {
     },
     {
       label: '已确认',
-      value: s.by_status?.confirmed || 0,
+      value: d.by_status?.confirmed ?? (s.by_status?.confirmed || 0),
       progress: s.total > 0 ? ((s.by_status?.confirmed || 0) / s.total) * 100 : 0,
       trend: t.by_status?.confirmed,
       color: '#10b981',

@@ -5,7 +5,45 @@ from typing import Dict, Any
 
 from .budget_manager import BudgetManager
 from .cache_service import DPResultCache
-from .mechanisms import DPParams, privatize_count, privatize_counts_dict
+from .mechanisms import DPParams, privatize_count, privatize_counts_dict, mask_low_freq
+
+# 已知分类，确保即使真实值为 0 也能加噪
+KNOWN_TYPES = {'FALLEN', 'STILLNESS', 'NIGHT_ABNORMAL'}
+KNOWN_RISKS = {'HIGH', 'MEDIUM', 'LOW'}
+KNOWN_STATUSES = {'pending', 'confirmed', 'false_alarm'}
+
+
+def _ensure_categories(stats: Dict[str, Any]) -> Dict[str, Any]:
+    """补全所有已知分类（值为 0），保证每个维度都能被加噪"""
+    filled = dict(stats)
+    for t in KNOWN_TYPES:
+        filled.setdefault('by_type', {}).setdefault(t, 0)
+    for r in KNOWN_RISKS:
+        filled.setdefault('by_risk', {}).setdefault(r, 0)
+    for s in KNOWN_STATUSES:
+        filled.setdefault('by_status', {}).setdefault(s, 0)
+    return filled
+
+
+def _scale_to_total(real_counts: dict[str, int], target_total: int) -> dict[str, int]:
+    """按真实比例缩放到 target_total，保证各维度求和一致"""
+    if target_total == 0 or not real_counts:
+        return {k: 0 for k in real_counts}
+    real_total = sum(real_counts.values())
+    if real_total == 0:
+        # 无真实数据时均匀分配
+        n = len(real_counts)
+        base = target_total // n
+        remainder = target_total % n
+        return {k: base + (1 if i < remainder else 0) for i, k in enumerate(real_counts)}
+    # 按真实比例缩放
+    scaled = {k: max(0, round(v * target_total / real_total)) for k, v in real_counts.items()}
+    diff = target_total - sum(scaled.values())
+    if diff != 0:
+        max_key = max(scaled, key=scaled.get)
+        scaled[max_key] = max(0, scaled[max_key] + diff)
+    return scaled
+
 
 @dataclass
 class StatsService:
@@ -33,12 +71,18 @@ class StatsService:
             check_budget: 是否检查预算限制（生产环境 True，开发环境 False）
 
         Returns:
-            {"value": 加噪后的 stats, "source": "cache" 或 "fresh_dp"}
+            {"value": 加噪后的 stats, "display": 低频隐藏展示值, "source": "cache" 或 "fresh_dp"}
         """
         # 检查缓存
         cached = self.cache.get(user_id, "stats", query_key, now)
         if cached is not None:
-            return {"value": cached, "source": "cache"}
+            display = {
+                'total': mask_low_freq(cached['total']),
+                'by_type': {k: mask_low_freq(v) for k, v in cached['by_type'].items()},
+                'by_risk': {k: mask_low_freq(v) for k, v in cached['by_risk'].items()},
+                'by_status': {k: mask_low_freq(v) for k, v in cached['by_status'].items()},
+            }
+            return {"value": cached, "display": display, "source": "cache"}
 
         # 检查预算（仅生产环境）
         if check_budget:
@@ -46,14 +90,19 @@ class StatsService:
             if not self.budget_manager.can_spend(user_id, epsilon, today):
                 raise ValueError("Privacy budget exceeded")
 
+        # 补全所有已知分类后再加噪
+        filled = _ensure_categories(stats)
         params = DPParams(epsilon=epsilon, sensitivity=1.0)
 
-        # 一次性加噪所有统计值
         noisy_stats = {}
-        noisy_stats['total'] = privatize_count(stats.get('total', 0), params)
-        noisy_stats['by_type'] = privatize_counts_dict(stats.get('by_type', {}), params)
-        noisy_stats['by_risk'] = privatize_counts_dict(stats.get('by_risk', {}), params)
-        noisy_stats['by_status'] = privatize_counts_dict(stats.get('by_status', {}), params)
+        noisy_stats['by_type'] = privatize_counts_dict(filled.get('by_type', {}), params)
+
+        # total 由 by_type 加噪值求和，保证总量与主分类一致
+        noisy_stats['total'] = sum(noisy_stats['by_type'].values())
+
+        # by_risk 和 by_status 按真实比例缩放至 total，保证各维度一致
+        noisy_stats['by_risk'] = _scale_to_total(filled.get('by_risk', {}), noisy_stats['total'])
+        noisy_stats['by_status'] = _scale_to_total(filled.get('by_status', {}), noisy_stats['total'])
 
         # 消耗预算（仅生产环境）
         if check_budget:
@@ -62,4 +111,12 @@ class StatsService:
 
         self.cache.set(user_id, "stats", query_key, noisy_stats, now)
 
-        return {"value": noisy_stats, "source": "fresh_dp"}
+        # 生成低频隐藏后的展示值
+        display_stats = {
+            'total': mask_low_freq(noisy_stats['total']),
+            'by_type': {k: mask_low_freq(v) for k, v in noisy_stats['by_type'].items()},
+            'by_risk': {k: mask_low_freq(v) for k, v in noisy_stats['by_risk'].items()},
+            'by_status': {k: mask_low_freq(v) for k, v in noisy_stats['by_status'].items()},
+        }
+
+        return {"value": noisy_stats, "display": display_stats, "source": "fresh_dp"}

@@ -30,3 +30,10 @@ def privatize_counts_dict(true_counts: dict[str, int], params: DPParams) -> dict
     for key, value in true_counts.items():
         result[key] = privatize_count(value, params)
     return result
+
+
+def mask_low_freq(noisy_count: int, threshold: int = 5) -> str | int:
+    """低频阈值隐藏：1~threshold-1 之间显示 '<threshold>'，防止小样本泄露。0 表示无事件，不隐藏。"""
+    if 0 < noisy_count < threshold:
+        return f"<{threshold}"
+    return noisy_count
