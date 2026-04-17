@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -18,7 +18,12 @@ class User(Base):
     password_hash = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False)
     role = Column(String(20), default='user')
-    platform_org_id = Column(Integer, nullable=True)
+    # 平台用户 profile（仅 platform 角色有值）
+    org_name = Column(String(100), nullable=True)
+    org_description = Column(Text, nullable=True)
+    org_contact_name = Column(String(64), nullable=True)
+    org_contact_phone = Column(String(20), nullable=True)
+    # 普通用户社区组绑定
     community_group_id = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
@@ -47,6 +52,13 @@ def init_db(app):
     _migrate_events_table(engine)
     _migrate_users_role(engine)
     _migrate_users_org(engine)
+
+    # community_groups 迁移（延迟导入避免循环依赖）
+    try:
+        from platform_org.models import _migrate_community_platform_user
+        _migrate_community_platform_user(engine)
+    except Exception:
+        pass
 
     # 创建默认管理员账户
     db = SessionLocal()
@@ -123,15 +135,35 @@ def _migrate_users_role(engine):
 
 
 def _migrate_users_org(engine):
-    """为 users 表添加 platform_org_id 和 community_group_id 字段"""
+    """为 users 表添加组织 profile 字段，并从旧 platform_orgs 表回填数据"""
     from sqlalchemy import inspect, text
     insp = inspect(engine)
     if 'users' not in insp.get_table_names():
         return
     existing = {col['name'] for col in insp.get_columns('users')}
     with engine.connect() as conn:
-        if 'platform_org_id' not in existing:
-            conn.execute(text('ALTER TABLE users ADD COLUMN platform_org_id INTEGER'))
         if 'community_group_id' not in existing:
             conn.execute(text('ALTER TABLE users ADD COLUMN community_group_id INTEGER'))
+        if 'org_name' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN org_name VARCHAR(100)'))
+        if 'org_description' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN org_description TEXT'))
+        if 'org_contact_name' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN org_contact_name VARCHAR(64)'))
+        if 'org_contact_phone' not in existing:
+            conn.execute(text('ALTER TABLE users ADD COLUMN org_contact_phone VARCHAR(20)'))
         conn.commit()
+
+        # 从旧 platform_orgs 表回填数据到 platform 用户
+        tables = insp.get_table_names()
+        if 'platform_orgs' in tables and 'platform_org_id' in existing:
+            conn.execute(text("""
+                UPDATE users SET
+                    org_name = (SELECT name FROM platform_orgs WHERE platform_orgs.id = users.platform_org_id),
+                    org_description = (SELECT description FROM platform_orgs WHERE platform_orgs.id = users.platform_org_id),
+                    org_contact_name = (SELECT contact_name FROM platform_orgs WHERE platform_orgs.id = users.platform_org_id),
+                    org_contact_phone = (SELECT contact_phone FROM platform_orgs WHERE platform_orgs.id = users.platform_org_id)
+                WHERE users.role = 'platform' AND users.platform_org_id IS NOT NULL
+                AND users.org_name IS NULL
+            """))
+            conn.commit()

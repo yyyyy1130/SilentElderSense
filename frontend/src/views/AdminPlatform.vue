@@ -2,53 +2,48 @@
   <div class="admin-platform">
     <!-- 标签页 -->
     <div class="tab-bar">
-      <button class="tab-btn" :class="{ active: activeTab === 'orgs' }" @click="activeTab = 'orgs'">平台组织</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'platform-users' }" @click="activeTab = 'platform-users'">平台用户</button>
       <button class="tab-btn" :class="{ active: activeTab === 'groups' }" @click="activeTab = 'groups'">社区组</button>
-      <button class="tab-btn" :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'">平台用户</button>
+      <button class="tab-btn" :class="{ active: activeTab === 'users' }" @click="activeTab = 'users'">用户管理</button>
     </div>
 
-    <!-- 平台组织 -->
-    <section v-if="activeTab === 'orgs'">
+    <!-- 平台用户 -->
+    <section v-if="activeTab === 'platform-users'">
       <div class="section-header">
-        <h3>平台组织管理</h3>
-        <button class="btn-primary" @click="showCreateOrg = true">创建组织</button>
+        <h3>平台用户管理</h3>
+        <button class="btn-primary" @click="showCreatePlatformUser = true">创建平台用户</button>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
               <th>ID</th>
-              <th>名称</th>
+              <th>用户名</th>
+              <th>组织名称</th>
               <th>联系人</th>
-              <th>状态</th>
+              <th>联系电话</th>
               <th>创建时间</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="org in orgs" :key="org.id">
-              <td>{{ org.id }}</td>
-              <td>{{ org.name }}</td>
-              <td>{{ org.contact_name || '-' }}</td>
-              <td>
-                <span class="status-badge" :class="org.status === 'active' ? 'active' : 'suspended'">
-                  <span class="status-dot"></span>
-                  {{ org.status === 'active' ? '运营中' : '已挂起' }}
-                </span>
-              </td>
-              <td>{{ formatDate(org.created_at) }}</td>
+            <tr v-for="u in platformUsers" :key="u.id">
+              <td>{{ u.id }}</td>
+              <td>{{ u.username }}</td>
+              <td>{{ u.org_name || '-' }}</td>
+              <td>{{ u.org_contact_name || '-' }}</td>
+              <td>{{ u.org_contact_phone || '-' }}</td>
+              <td>{{ formatDate(u.created_at) }}</td>
               <td>
                 <div class="action-btns">
-                  <button class="action-btn secondary" @click="editOrg(org)">编辑</button>
-                  <button class="action-btn danger" @click="handleSuspendOrg(org)">
-                    {{ org.status === 'active' ? '挂起' : '恢复' }}
-                  </button>
+                  <button class="action-btn secondary" @click="editPlatformUser(u)">编辑</button>
+                  <button class="action-btn danger" @click="handleResetPassword(u)">重设密码</button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
-        <div v-if="orgs.length === 0" class="empty-state">暂无平台组织</div>
+        <div v-if="platformUsers.length === 0" class="empty-state">暂无平台用户</div>
       </div>
     </section>
 
@@ -57,11 +52,11 @@
       <div class="section-header">
         <h3>社区组管理</h3>
         <div class="filter-group">
-          <select v-model="selectedOrgId" @change="loadGroups" class="filter-select">
-            <option value="">选择平台组织</option>
-            <option v-for="org in orgs" :key="org.id" :value="org.id">{{ org.name }}</option>
+          <select v-model="selectedPlatformUserId" @change="loadGroups" class="filter-select">
+            <option value="">选择平台用户</option>
+            <option v-for="u in platformUsers" :key="u.id" :value="u.id">{{ u.org_name || u.username }}</option>
           </select>
-          <button class="btn-primary" :disabled="!selectedOrgId" @click="showCreateGroup = true">创建社区组</button>
+          <button class="btn-primary" :disabled="!selectedPlatformUserId" @click="showCreateGroup = true">创建社区组</button>
         </div>
       </div>
       <div class="table-wrapper">
@@ -97,72 +92,144 @@
             </tr>
           </tbody>
         </table>
-        <div v-if="groups.length === 0 && selectedOrgId" class="empty-state">该组织下暂无社区组</div>
-        <div v-if="!selectedOrgId" class="empty-state">请先选择平台组织</div>
+        <div v-if="groups.length === 0 && selectedPlatformUserId" class="empty-state">该平台用户下暂无社区组</div>
+        <div v-if="!selectedPlatformUserId" class="empty-state">请先选择平台用户</div>
       </div>
     </section>
 
-    <!-- 平台用户 -->
+    <!-- 用户管理 -->
     <section v-if="activeTab === 'users'">
       <div class="section-header">
-        <h3>创建平台用户</h3>
+        <h3>所有用户</h3>
       </div>
-      <div class="form-card">
-        <div class="form-grid">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>用户名</th>
+              <th>邮箱</th>
+              <th>角色</th>
+              <th>创建时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="u in allUsers" :key="u.id">
+              <td>{{ u.id }}</td>
+              <td>{{ u.username }}</td>
+              <td>{{ u.email || '-' }}</td>
+              <td>
+                <span class="status-badge" :class="roleBadgeClass(u.role)">
+                  {{ roleLabel(u.role) }}
+                </span>
+              </td>
+              <td>{{ formatDate(u.created_at) }}</td>
+              <td>
+                <div class="action-btns">
+                  <button class="action-btn danger" @click="handleResetPassword(u)">重设密码</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div v-if="allUsers.length === 0" class="empty-state">暂无用户</div>
+      </div>
+    </section>
+
+    <!-- 创建平台用户弹窗 -->
+    <div v-if="showCreatePlatformUser" class="modal-overlay" @click.self="showCreatePlatformUser = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>创建平台用户</h3>
+          <button class="modal-close" @click="showCreatePlatformUser = false">✕</button>
+        </div>
+        <div class="modal-body">
           <div class="form-item">
             <label>用户名</label>
-            <input v-model="newUser.username" placeholder="输入用户名" class="form-input" />
+            <input v-model="newPlatformUser.username" placeholder="输入用户名" class="form-input" />
           </div>
           <div class="form-item">
             <label>密码</label>
-            <input v-model="newUser.password" type="password" placeholder="输入密码" class="form-input" />
+            <input v-model="newPlatformUser.password" type="password" placeholder="输入密码" class="form-input" />
           </div>
           <div class="form-item">
-            <label>邮箱</label>
-            <input v-model="newUser.email" placeholder="输入邮箱（可选）" class="form-input" />
+            <label>邮箱（可选）</label>
+            <input v-model="newPlatformUser.email" placeholder="输入邮箱" class="form-input" />
           </div>
           <div class="form-item">
-            <label>所属组织</label>
-            <select v-model="newUser.platform_org_id" class="filter-select">
-              <option value="">选择组织</option>
-              <option v-for="org in orgs" :key="org.id" :value="org.id">{{ org.name }}</option>
-            </select>
+            <label>组织名称</label>
+            <input v-model="newPlatformUser.org_name" placeholder="输入组织名称" class="form-input" />
+          </div>
+          <div class="form-item">
+            <label>组织描述</label>
+            <textarea v-model="newPlatformUser.org_description" placeholder="输入描述" class="form-input" rows="3"></textarea>
+          </div>
+          <div class="form-item">
+            <label>联系人</label>
+            <input v-model="newPlatformUser.org_contact_name" placeholder="输入联系人" class="form-input" />
+          </div>
+          <div class="form-item">
+            <label>联系电话</label>
+            <input v-model="newPlatformUser.org_contact_phone" placeholder="输入联系电话" class="form-input" />
           </div>
         </div>
-        <button class="btn-primary" @click="createPlatformUser" :disabled="!newUser.username || !newUser.password || !newUser.platform_org_id">
-          创建平台用户
-        </button>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showCreatePlatformUser = false">取消</button>
+          <button class="btn-primary" @click="savePlatformUser" :disabled="!newPlatformUser.username || !newPlatformUser.password">创建</button>
+        </div>
       </div>
-    </section>
+    </div>
 
-    <!-- 创建组织弹窗 -->
-    <div v-if="showCreateOrg" class="modal-overlay" @click.self="showCreateOrg = false">
+    <!-- 编辑平台用户弹窗 -->
+    <div v-if="showEditPlatformUser" class="modal-overlay" @click.self="showEditPlatformUser = false">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>{{ editingOrg ? '编辑组织' : '创建平台组织' }}</h3>
-          <button class="modal-close" @click="showCreateOrg = false; editingOrg = null">✕</button>
+          <h3>编辑平台用户</h3>
+          <button class="modal-close" @click="showEditPlatformUser = false">✕</button>
         </div>
         <div class="modal-body">
           <div class="form-item">
             <label>组织名称</label>
-            <input v-model="orgForm.name" placeholder="输入组织名称" class="form-input" />
+            <input v-model="editForm.org_name" placeholder="输入组织名称" class="form-input" />
           </div>
           <div class="form-item">
-            <label>描述</label>
-            <textarea v-model="orgForm.description" placeholder="输入描述" class="form-input" rows="3"></textarea>
+            <label>组织描述</label>
+            <textarea v-model="editForm.org_description" placeholder="输入描述" class="form-input" rows="3"></textarea>
           </div>
           <div class="form-item">
             <label>联系人</label>
-            <input v-model="orgForm.contact_name" placeholder="输入联系人" class="form-input" />
+            <input v-model="editForm.org_contact_name" placeholder="输入联系人" class="form-input" />
           </div>
           <div class="form-item">
             <label>联系电话</label>
-            <input v-model="orgForm.contact_phone" placeholder="输入联系电话" class="form-input" />
+            <input v-model="editForm.org_contact_phone" placeholder="输入联系电话" class="form-input" />
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-secondary" @click="showCreateOrg = false; editingOrg = null">取消</button>
-          <button class="btn-primary" @click="saveOrg">保存</button>
+          <button class="btn-secondary" @click="showEditPlatformUser = false">取消</button>
+          <button class="btn-primary" @click="saveEditPlatformUser">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重设密码弹窗 -->
+    <div v-if="showResetPassword" class="modal-overlay" @click.self="showResetPassword = false">
+      <div class="modal-content" style="width: 360px">
+        <div class="modal-header">
+          <h3>重设密码</h3>
+          <button class="modal-close" @click="showResetPassword = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="reset-user-info">用户：{{ resetTarget?.username }}</p>
+          <div class="form-item">
+            <label>新密码</label>
+            <input v-model="newPassword" type="password" placeholder="输入新密码" class="form-input" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showResetPassword = false">取消</button>
+          <button class="btn-primary" @click="confirmResetPassword" :disabled="!newPassword || newPassword.length < 4">确认重设</button>
         </div>
       </div>
     </div>
@@ -200,78 +267,107 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import {
-  listOrgs, createOrg, updateOrg, suspendOrg,
-  listGroups, createGroup, updateGroup, suspendGroup,
+  listPlatformUsers, updatePlatformUser, listAllUsers, adminResetPassword,
+  createGroup, listGroups, updateGroup, suspendGroup,
 } from '@/api/platform'
 import { createPlatformUser as createPlatformUserApi } from '@/api/auth'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-const activeTab = ref('orgs')
+const activeTab = ref('platform-users')
 
-// 组织
-const orgs = ref([])
-const showCreateOrg = ref(false)
-const editingOrg = ref(null)
-const orgForm = ref({ name: '', description: '', contact_name: '', contact_phone: '' })
+// 平台用户
+const platformUsers = ref([])
+const showCreatePlatformUser = ref(false)
+const showEditPlatformUser = ref(false)
+const newPlatformUser = ref({ username: '', password: '', email: '', org_name: '', org_description: '', org_contact_name: '', org_contact_phone: '' })
+const editForm = ref({ org_name: '', org_description: '', org_contact_name: '', org_contact_phone: '' })
+const editingUserId = ref(null)
 
 // 社区组
 const groups = ref([])
-const selectedOrgId = ref('')
+const selectedPlatformUserId = ref('')
 const showCreateGroup = ref(false)
 const editingGroup = ref(null)
 const groupForm = ref({ name: '', description: '', address: '' })
 
-// 用户
-const newUser = ref({ username: '', password: '', email: '', platform_org_id: '' })
+// 用户管理
+const allUsers = ref([])
 
-async function loadOrgs() {
+// 重设密码
+const showResetPassword = ref(false)
+const resetTarget = ref(null)
+const newPassword = ref('')
+
+async function loadPlatformUsers() {
   try {
-    const res = await listOrgs()
-    orgs.value = Array.isArray(res.data) ? res.data : res
+    const res = await listPlatformUsers()
+    platformUsers.value = Array.isArray(res.data) ? res.data : res
   } catch (e) { console.error(e) }
 }
 
-async function saveOrg() {
+async function loadAllUsers() {
   try {
-    if (editingOrg.value) {
-      await updateOrg(editingOrg.value.id, orgForm.value)
-      ElMessage.success('更新成功')
-    } else {
-      await createOrg(orgForm.value)
-      ElMessage.success('创建成功')
-    }
-    showCreateOrg.value = false
-    editingOrg.value = null
-    orgForm.value = { name: '', description: '', contact_name: '', contact_phone: '' }
-    loadOrgs()
+    const res = await listAllUsers()
+    allUsers.value = Array.isArray(res.data) ? res.data : res
+  } catch (e) { console.error(e) }
+}
+
+async function savePlatformUser() {
+  try {
+    await createPlatformUserApi(newPlatformUser.value)
+    ElMessage.success('平台用户创建成功')
+    newPlatformUser.value = { username: '', password: '', email: '', org_name: '', org_description: '', org_contact_name: '', org_contact_phone: '' }
+    showCreatePlatformUser.value = false
+    loadPlatformUsers()
+    loadAllUsers()
   } catch (e) {
-    ElMessage.error(e.response?.data?.error || '操作失败')
+    ElMessage.error(e.response?.data?.error || '创建失败')
   }
 }
 
-function editOrg(org) {
-  editingOrg.value = org
-  orgForm.value = { name: org.name, description: org.description || '', contact_name: org.contact_name || '', contact_phone: org.contact_phone || '' }
-  showCreateOrg.value = true
+function editPlatformUser(u) {
+  editingUserId.value = u.id
+  editForm.value = {
+    org_name: u.org_name || '',
+    org_description: u.org_description || '',
+    org_contact_name: u.org_contact_name || '',
+    org_contact_phone: u.org_contact_phone || '',
+  }
+  showEditPlatformUser.value = true
 }
 
-async function handleSuspendOrg(org) {
+async function saveEditPlatformUser() {
   try {
-    if (org.status === 'active') {
-      await suspendOrg(org.id)
-      ElMessage.success('已挂起')
-    } else {
-      await updateOrg(org.id, { status: 'active' })
-      ElMessage.success('已恢复')
-    }
-    loadOrgs()
-  } catch (e) { ElMessage.error('操作失败') }
+    await updatePlatformUser(editingUserId.value, editForm.value)
+    ElMessage.success('更新成功')
+    showEditPlatformUser.value = false
+    loadPlatformUsers()
+    loadAllUsers()
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || '更新失败')
+  }
+}
+
+function handleResetPassword(u) {
+  resetTarget.value = u
+  newPassword.value = ''
+  showResetPassword.value = true
+}
+
+async function confirmResetPassword() {
+  try {
+    await adminResetPassword({ user_id: resetTarget.value.id, new_password: newPassword.value })
+    ElMessage.success(`${resetTarget.value.username} 密码已重置`)
+    showResetPassword.value = false
+  } catch (e) {
+    ElMessage.error(e.response?.data?.error || '重设失败')
+  }
 }
 
 async function loadGroups() {
-  if (!selectedOrgId.value) { groups.value = []; return }
+  if (!selectedPlatformUserId.value) { groups.value = []; return }
   try {
-    const res = await listGroups(selectedOrgId.value)
+    const res = await listGroups(selectedPlatformUserId.value)
     groups.value = Array.isArray(res.data) ? res.data : res
   } catch (e) { console.error(e) }
 }
@@ -282,7 +378,7 @@ async function saveGroup() {
       await updateGroup(editingGroup.value.id, groupForm.value)
       ElMessage.success('更新成功')
     } else {
-      await createGroup(selectedOrgId.value, groupForm.value)
+      await createGroup(selectedPlatformUserId.value, groupForm.value)
       ElMessage.success('创建成功')
     }
     showCreateGroup.value = false
@@ -313,14 +409,12 @@ async function handleSuspendGroup(g) {
   } catch (e) { ElMessage.error('操作失败') }
 }
 
-async function createPlatformUser() {
-  try {
-    await createPlatformUserApi(newUser.value)
-    ElMessage.success('平台用户创建成功')
-    newUser.value = { username: '', password: '', email: '', platform_org_id: '' }
-  } catch (e) {
-    ElMessage.error(e.response?.data?.error || '创建失败')
-  }
+function roleLabel(role) {
+  return { admin: '管理员', platform: '平台用户', user: '普通用户' }[role] || role
+}
+
+function roleBadgeClass(role) {
+  return { admin: 'active', platform: 'platform', user: '' }[role] || ''
 }
 
 function formatDate(iso) {
@@ -328,7 +422,7 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('zh-CN')
 }
 
-onMounted(() => { loadOrgs() })
+onMounted(() => { loadPlatformUsers(); loadAllUsers() })
 </script>
 
 <style scoped>
@@ -462,6 +556,7 @@ onMounted(() => { loadOrgs() })
 
 .status-badge.active { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 .status-badge.suspended { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.status-badge.platform { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
 
 .status-dot {
   width: 6px;
@@ -497,13 +592,6 @@ onMounted(() => { loadOrgs() })
   padding: 24px;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
 .form-item {
   display: flex;
   flex-direction: column;
@@ -534,6 +622,12 @@ onMounted(() => { loadOrgs() })
   text-align: center;
   padding: 40px;
   color: #666;
+}
+
+.reset-user-info {
+  color: #ddd;
+  font-size: 14px;
+  margin: 0 0 12px;
 }
 
 /* 弹窗 */

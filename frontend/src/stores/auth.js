@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
           id: response.user_id,
           username: response.username,
           role: response.role || 'user',
-          platform_org_id: response.platform_org_id || null,
+          org_name: response.org_name || null,
           community_group_id: response.community_group_id || null,
         }
 

@@ -2,130 +2,81 @@
 平台组织与社区组 API
 
 接口:
-    POST   /api/platform/orgs                    - 创建平台组织（管理员）
-    GET    /api/platform/orgs                    - 列表（管理员）
-    PUT    /api/platform/orgs/<id>               - 更新（管理员）
-    DELETE /api/platform/orgs/<id>               - 挂起（管理员）
-    POST   /api/platform/orgs/<org_id>/groups    - 创建社区组（管理员）
-    GET    /api/platform/orgs/<org_id>/groups    - 社区组列表（管理员）
-    PUT    /api/platform/groups/<id>             - 更新社区组（管理员）
-    DELETE /api/platform/groups/<id>             - 挂起社区组（管理员）
-    GET    /api/platform/org                     - 当前平台用户所属组织
-    GET    /api/platform/communities             - 当前组织下社区组列表
-    GET    /api/platform/stats                   - 聚合统计（平台用户，强制 DP）
-    GET    /api/platform/stats/daily             - 每日趋势（平台用户，强制 DP）
-    GET    /api/community/groups                 - 可选社区组列表（普通用户）
-    PUT    /api/user/community                   - 选择/切换社区组
-    GET    /api/user/community                   - 获取当前绑定
+    GET    /api/platform/users                  - 列出所有平台用户（管理员）
+    PUT    /api/platform/users/<id>             - 编辑平台用户 profile（管理员）
+    POST   /api/platform/users/<user_id>/groups - 创建社区组（管理员）
+    GET    /api/platform/users/<user_id>/groups - 社区组列表（管理员）
+    PUT    /api/platform/groups/<id>            - 更新社区组（管理员）
+    DELETE /api/platform/groups/<id>            - 挂起社区组（管理员）
+    GET    /api/platform/profile                - 当前平台用户 profile
+    GET    /api/platform/communities            - 当前平台用户下社区组列表
+    GET    /api/platform/stats                  - 聚合统计（平台用户，强制 DP）
+    GET    /api/platform/stats/daily            - 每日趋势（平台用户，强制 DP）
+    GET    /api/community/groups                - 可选社区组列表（普通用户）
+    PUT    /api/user/community                  - 选择/切换社区组
+    GET    /api/user/community                  - 获取当前绑定
 """
 from datetime import datetime, timedelta
 from quart import Blueprint, request, jsonify, current_app
 from auth.models import get_db, User
 from auth.utils import token_required, admin_required, role_required
-from .models import PlatformOrg, CommunityGroup
+from .models import CommunityGroup
 from events.models import Event
 
 platform_bp = Blueprint('platform', __name__)
 
 
-# ── 管理员：平台组织 CRUD ──────────────────────────
+# ── 管理员：平台用户管理 ──────────────────────────
 
-@platform_bp.route('/api/platform/orgs', methods=['POST'])
+@platform_bp.route('/api/platform/users', methods=['GET'])
 @token_required
 @admin_required
-async def create_org():
+async def list_platform_users():
+    db = next(get_db())
+    users = db.query(User).filter_by(role='platform').order_by(User.created_at.desc()).all()
+    return jsonify([{
+        'id': u.id,
+        'username': u.username,
+        'email': u.email,
+        'org_name': u.org_name,
+        'org_description': u.org_description,
+        'org_contact_name': u.org_contact_name,
+        'org_contact_phone': u.org_contact_phone,
+        'created_at': u.created_at.isoformat() if u.created_at else None,
+    } for u in users])
+
+
+@platform_bp.route('/api/platform/users/<int:user_id>', methods=['PUT'])
+@token_required
+@admin_required
+async def update_platform_user(user_id: int):
     data = await request.get_json()
     db = next(get_db())
+    user = db.query(User).filter_by(id=user_id, role='platform').first()
+    if not user:
+        return jsonify({'error': '平台用户不存在'}), 404
 
-    existing = db.query(PlatformOrg).filter_by(name=data['name']).first()
-    if existing:
-        return jsonify({'error': '平台组织名称已存在'}), 400
-
-    org = PlatformOrg(
-        name=data['name'],
-        description=data.get('description'),
-        contact_name=data.get('contact_name'),
-        contact_phone=data.get('contact_phone'),
-    )
-    db.add(org)
-    db.commit()
-    db.refresh(org)
-    return jsonify({'message': '平台组织创建成功', 'org': org.to_dict()}), 201
-
-
-@platform_bp.route('/api/platform/orgs', methods=['GET'])
-@token_required
-@admin_required
-async def list_orgs():
-    db = next(get_db())
-    orgs = db.query(PlatformOrg).order_by(PlatformOrg.created_at.desc()).all()
-    return jsonify([o.to_dict() for o in orgs])
-
-
-@platform_bp.route('/api/platform/orgs/<int:org_id>', methods=['GET'])
-@token_required
-@admin_required
-async def get_org(org_id: int):
-    db = next(get_db())
-    org = db.query(PlatformOrg).filter_by(id=org_id).first()
-    if not org:
-        return jsonify({'error': '平台组织不存在'}), 404
-
-    groups = db.query(CommunityGroup).filter_by(platform_org_id=org_id).all()
-    user_count = db.query(User).filter_by(platform_org_id=org_id).count()
-
-    return jsonify({
-        'org': org.to_dict(),
-        'groups': [g.to_dict() for g in groups],
-        'platform_user_count': user_count,
-    })
-
-
-@platform_bp.route('/api/platform/orgs/<int:org_id>', methods=['PUT'])
-@token_required
-@admin_required
-async def update_org(org_id: int):
-    data = await request.get_json()
-    db = next(get_db())
-    org = db.query(PlatformOrg).filter_by(id=org_id).first()
-    if not org:
-        return jsonify({'error': '平台组织不存在'}), 404
-
-    for field in ['name', 'description', 'contact_name', 'contact_phone', 'status']:
+    for field in ['org_name', 'org_description', 'org_contact_name', 'org_contact_phone', 'email']:
         if field in data:
-            setattr(org, field, data[field])
+            setattr(user, field, data[field])
     db.commit()
-    db.refresh(org)
-    return jsonify({'message': '更新成功', 'org': org.to_dict()})
-
-
-@platform_bp.route('/api/platform/orgs/<int:org_id>', methods=['DELETE'])
-@token_required
-@admin_required
-async def suspend_org(org_id: int):
-    db = next(get_db())
-    org = db.query(PlatformOrg).filter_by(id=org_id).first()
-    if not org:
-        return jsonify({'error': '平台组织不存在'}), 404
-    org.status = 'suspended'
-    db.commit()
-    return jsonify({'message': '平台组织已挂起'})
+    return jsonify({'message': '更新成功'})
 
 
 # ── 管理员：社区组 CRUD ──────────────────────────
 
-@platform_bp.route('/api/platform/orgs/<int:org_id>/groups', methods=['POST'])
+@platform_bp.route('/api/platform/users/<int:platform_user_id>/groups', methods=['POST'])
 @token_required
 @admin_required
-async def create_group(org_id: int):
+async def create_group(platform_user_id: int):
     db = next(get_db())
-    org = db.query(PlatformOrg).filter_by(id=org_id).first()
-    if not org:
-        return jsonify({'error': '平台组织不存在'}), 404
+    user = db.query(User).filter_by(id=platform_user_id, role='platform').first()
+    if not user:
+        return jsonify({'error': '平台用户不存在'}), 404
 
     data = await request.get_json()
     group = CommunityGroup(
-        platform_org_id=org_id,
+        platform_user_id=platform_user_id,
         name=data['name'],
         description=data.get('description'),
         address=data.get('address'),
@@ -136,12 +87,12 @@ async def create_group(org_id: int):
     return jsonify({'message': '社区组创建成功', 'group': group.to_dict()}), 201
 
 
-@platform_bp.route('/api/platform/orgs/<int:org_id>/groups', methods=['GET'])
+@platform_bp.route('/api/platform/users/<int:platform_user_id>/groups', methods=['GET'])
 @token_required
 @admin_required
-async def list_groups(org_id: int):
+async def list_groups(platform_user_id: int):
     db = next(get_db())
-    groups = db.query(CommunityGroup).filter_by(platform_org_id=org_id).order_by(CommunityGroup.created_at.desc()).all()
+    groups = db.query(CommunityGroup).filter_by(platform_user_id=platform_user_id).order_by(CommunityGroup.created_at.desc()).all()
     return jsonify([g.to_dict() for g in groups])
 
 
@@ -176,24 +127,26 @@ async def suspend_group(group_id: int):
     return jsonify({'message': '社区组已挂起'})
 
 
-# ── 平台用户：组织信息与社区组 ──────────────────────────
+# ── 平台用户：profile 与社区组 ──────────────────────────
 
-@platform_bp.route('/api/platform/org', methods=['GET'])
+@platform_bp.route('/api/platform/profile', methods=['GET'])
 @token_required
 @role_required('platform')
-async def get_my_org():
+async def get_my_profile():
     user_id = request.current_user['user_id']
     db = next(get_db())
     user = db.query(User).filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': '用户不存在'}), 404
 
-    if not user or not user.platform_org_id:
-        return jsonify({'error': '未绑定平台组织'}), 400
-
-    org = db.query(PlatformOrg).filter_by(id=user.platform_org_id).first()
-    if not org:
-        return jsonify({'error': '平台组织不存在'}), 404
-
-    return jsonify({'org': org.to_dict()})
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'org_name': user.org_name,
+        'org_description': user.org_description,
+        'org_contact_name': user.org_contact_name,
+        'org_contact_phone': user.org_contact_phone,
+    })
 
 
 @platform_bp.route('/api/platform/communities', methods=['GET'])
@@ -202,13 +155,9 @@ async def get_my_org():
 async def list_my_communities():
     user_id = request.current_user['user_id']
     db = next(get_db())
-    user = db.query(User).filter_by(id=user_id).first()
-
-    if not user or not user.platform_org_id:
-        return jsonify({'error': '未绑定平台组织'}), 400
 
     groups = db.query(CommunityGroup).filter_by(
-        platform_org_id=user.platform_org_id,
+        platform_user_id=user_id,
         status='active',
     ).all()
 
@@ -224,10 +173,10 @@ async def list_my_communities():
 
 # ── 平台用户：聚合统计 ──────────────────────────
 
-def _get_org_user_ids(db, platform_org_id: int):
-    """获取平台组织下所有社区组的用户ID列表"""
+def _get_platform_user_ids(db, platform_user_id: int):
+    """获取平台用户下所有社区组的用户ID列表"""
     group_ids = [g.id for g in db.query(CommunityGroup).filter(
-        CommunityGroup.platform_org_id == platform_org_id,
+        CommunityGroup.platform_user_id == platform_user_id,
         CommunityGroup.status == 'active',
     ).all()]
     if not group_ids:
@@ -245,31 +194,23 @@ async def platform_stats():
     days = int(request.args.get('days', 7))
 
     db = next(get_db())
-    user = db.query(User).filter_by(id=user_id).first()
-    if not user or not user.platform_org_id:
-        return jsonify({'error': '未绑定平台组织'}), 400
-
-    org_id = user.platform_org_id
-    member_ids = _get_org_user_ids(db, org_id)
+    member_ids = _get_platform_user_ids(db, user_id)
 
     now = datetime.now()
     start_date = now - timedelta(days=days)
     prev_start = start_date - timedelta(days=days)
 
-    # 本期事件
     current_events = db.query(Event).filter(
         Event.created_at >= start_date,
         Event.user_id.in_(member_ids),
     ).all() if member_ids else []
 
-    # 上期事件
     prev_events = db.query(Event).filter(
         Event.created_at >= prev_start,
         Event.created_at < start_date,
         Event.user_id.in_(member_ids),
     ).all() if member_ids else []
 
-    # 统计
     stats = {'total': len(current_events), 'by_type': {}, 'by_risk': {}, 'by_status': {}}
     prev_stats = {'total': len(prev_events), 'by_type': {}, 'by_risk': {}, 'by_status': {}}
 
@@ -300,7 +241,7 @@ async def platform_stats():
     query_key = f"stats_{days}days"
     try:
         private_result = svc.get_private_stats(
-            user_id=f"platform_{org_id}",
+            user_id=f"platform_{user_id}",
             query_key=query_key,
             stats={'total': stats['total'], 'by_type': stats['by_type'], 'by_risk': stats['by_risk'], 'by_status': stats['by_status']},
             epsilon=epsilon,
@@ -317,7 +258,6 @@ async def platform_stats():
     except ValueError as e:
         return jsonify({'error': '隐私预算已用完，请稍后再试', 'detail': str(e)}), 429
 
-    # 趋势
     def calc_trend(cur, prev):
         return round((cur - prev) / prev * 100, 1) if prev else None
 
@@ -327,7 +267,6 @@ async def platform_stats():
         'by_risk': {k: calc_trend(stats['by_risk'].get(k, 0), prev_stats['by_risk'].get(k, 0)) for k in stats['by_risk']},
     }
     stats['member_count'] = len(member_ids)
-    stats['org_id'] = org_id
     return jsonify(stats)
 
 
@@ -339,11 +278,7 @@ async def platform_daily_trend():
     days = int(request.args.get('days', 7))
 
     db = next(get_db())
-    user = db.query(User).filter_by(id=user_id).first()
-    if not user or not user.platform_org_id:
-        return jsonify({'error': '未绑定平台组织'}), 400
-
-    member_ids = _get_org_user_ids(db, user.platform_org_id)
+    member_ids = _get_platform_user_ids(db, user_id)
     now = datetime.now()
     start_date = (now - timedelta(days=days - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -389,10 +324,11 @@ async def available_groups():
 
     result = []
     for g in groups:
-        org = db.query(PlatformOrg).filter_by(id=g.platform_org_id).first()
+        # 通过 platform_user_id 找到平台用户的 org_name
+        platform_user = db.query(User).filter_by(id=g.platform_user_id, role='platform').first()
         member_count = db.query(User).filter_by(community_group_id=g.id).count()
         d = g.to_dict()
-        d['org_name'] = org.name if org else ''
+        d['org_name'] = platform_user.org_name if platform_user else ''
         d['member_count'] = member_count
         result.append(d)
 
@@ -414,9 +350,9 @@ async def get_user_community():
     if not group:
         return jsonify({'community': None})
 
-    org = db.query(PlatformOrg).filter_by(id=group.platform_org_id).first()
+    platform_user = db.query(User).filter_by(id=group.platform_user_id, role='platform').first()
     d = group.to_dict()
-    d['org_name'] = org.name if org else ''
+    d['org_name'] = platform_user.org_name if platform_user else ''
     return jsonify({'community': d})
 
 
@@ -432,7 +368,6 @@ async def set_user_community():
     user = db.query(User).filter_by(id=user_id).first()
 
     if group_id is None:
-        # 取消绑定
         user.community_group_id = None
         db.commit()
         return jsonify({'message': '已取消社区组绑定', 'community': None})

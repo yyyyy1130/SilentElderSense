@@ -1,23 +1,22 @@
 import api from './index'
 
-// ── 管理员：平台组织 ──
+// ── 管理员：平台用户 ──
 
-export const createOrg = (data) => api.post('/platform/orgs', data)
-export const listOrgs = () => api.get('/platform/orgs')
-export const getOrg = (orgId) => api.get(`/platform/orgs/${orgId}`)
-export const updateOrg = (orgId, data) => api.put(`/platform/orgs/${orgId}`, data)
-export const suspendOrg = (orgId) => api.delete(`/platform/orgs/${orgId}`)
+export const listPlatformUsers = () => api.get('/platform/users')
+export const updatePlatformUser = (userId, data) => api.put(`/platform/users/${userId}`, data)
+export const listAllUsers = () => api.get('/users')
+export const adminResetPassword = (data) => api.post('/admin/reset-password', data)
 
 // ── 管理员：社区组 ──
 
-export const createGroup = (orgId, data) => api.post(`/platform/orgs/${orgId}/groups`, data)
-export const listGroups = (orgId) => api.get(`/platform/orgs/${orgId}/groups`)
+export const createGroup = (platformUserId, data) => api.post(`/platform/users/${platformUserId}/groups`, data)
+export const listGroups = (platformUserId) => api.get(`/platform/users/${platformUserId}/groups`)
 export const updateGroup = (groupId, data) => api.put(`/platform/groups/${groupId}`, data)
 export const suspendGroup = (groupId) => api.delete(`/platform/groups/${groupId}`)
 
 // ── 平台用户 ──
 
-export const getMyOrg = () => api.get('/platform/org')
+export const getMyProfile = () => api.get('/platform/profile')
 export const getMyCommunities = () => api.get('/platform/communities')
 export const getPlatformStats = (days = 7) => api.get('/platform/stats', { params: { days } })
 export const getPlatformDailyTrend = (days = 7) => api.get('/platform/stats/daily', { params: { days } })

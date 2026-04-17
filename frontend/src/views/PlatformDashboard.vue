@@ -127,7 +127,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { getMyOrg, getMyCommunities, getPlatformStats, getPlatformDailyTrend } from '@/api/platform'
+import { getMyProfile, getMyCommunities, getPlatformStats, getPlatformDailyTrend } from '@/api/platform'
 import * as echarts from 'echarts'
 
 const orgInfo = ref(null)
@@ -156,8 +156,12 @@ const statsCards = computed(() => {
 
 async function loadOrg() {
   try {
-    const res = await getMyOrg()
-    orgInfo.value = res.org
+    const res = await getMyProfile()
+    orgInfo.value = {
+      name: res.org_name || res.username,
+      description: res.org_description,
+      status: 'active',
+    }
   } catch (e) { console.error(e) }
 }
 
