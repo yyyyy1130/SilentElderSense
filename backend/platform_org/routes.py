@@ -22,8 +22,16 @@ from auth.models import get_db, User
 from auth.utils import token_required, admin_required, role_required
 from .models import CommunityGroup
 from events.models import Event
+from dp_stats.budget_manager import BudgetManager
+from dp_stats.cache_service import DPResultCache
+from dp_stats.stats_service import StatsService
 
 platform_bp = Blueprint('platform', __name__)
+
+# 差分隐私服务（模块级单例）
+_plat_budget = BudgetManager(daily_limit=3.0)
+_plat_cache = DPResultCache(ttl_minutes=10)
+_plat_stats_svc = StatsService(budget_manager=_plat_budget, cache=_plat_cache)
 
 
 # ── 管理员：平台用户管理 ──────────────────────────
@@ -232,19 +240,9 @@ async def platform_stats():
     budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
     epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
 
-    import sys, os
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from dp_stats.stats_service import StatsService
-    from dp_stats.budget_manager import BudgetManager
-    from dp_stats.cache_service import DPResultCache
-
-    bm = BudgetManager(daily_limit=3.0)
-    cache = DPResultCache(ttl_minutes=10)
-    svc = StatsService(budget_manager=bm, cache=cache)
-
     query_key = f"stats_{days}days_group_{community_group_id or 'all'}"
     try:
-        private_result = svc.get_private_stats(
+        private_result = _plat_stats_svc.get_private_stats(
             user_id=f"platform_{user_id}",
             query_key=query_key,
             stats={'total': stats['total'], 'by_type': stats['by_type'], 'by_risk': stats['by_risk'], 'by_status': stats['by_status']},
@@ -308,19 +306,9 @@ async def platform_daily_trend():
     budget_enabled = current_app.config.get('DP_BUDGET_ENABLED', True)
     epsilon = current_app.config.get('DP_DEFAULT_EPSILON', 0.8)
 
-    import sys, os
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from dp_stats.stats_service import StatsService
-    from dp_stats.budget_manager import BudgetManager
-    from dp_stats.cache_service import DPResultCache
-
-    bm = BudgetManager(daily_limit=3.0)
-    cache = DPResultCache(ttl_minutes=10)
-    svc = StatsService(budget_manager=bm, cache=cache)
-
     query_key = f"daily_stats_{days}days_group_{community_group_id or 'all'}"
     try:
-        private_result = svc.get_private_daily_trend(
+        private_result = _plat_stats_svc.get_private_daily_trend(
             user_id=f"platform_{user_id}",
             query_key=query_key,
             daily_data=daily_data,
